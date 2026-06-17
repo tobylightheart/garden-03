@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Maze of Games</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-shadow: 0 0 5px #fff;
+        }
+        h1 { font-size: 3rem; margin-bottom: 2rem; }
+        .maze-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .game-card {
+            padding: 20px;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .game-card:hover {
+            transform: scale(1.05);
+            border-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>THE MAZE</h1>
+    <div class="maze-grid">
+        <!-- Games will be injected here -->
+        <div class="game-card">Coming Soon...</div>
+        <div class="game-card">Coming Soon...</div>
+        <div class="game-card">Coming Soon...</div>
+    </div>
+</body>
+</html>

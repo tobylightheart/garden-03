@@ -1,0 +1,11 @@
+{
+  "games": [],
+  "specs": [
+    {
+      "id": "spec-001",
+      "description": "Initial maze entry point with a spooky atmosphere.",
+      "status": "complete",
+      "file_path": "games/entry.html"
+    }
+  ]
+}
