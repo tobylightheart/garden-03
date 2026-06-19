@@ -6,6 +6,31 @@
       "description": "Initial maze entry point with a spooky atmosphere.",
       "status": "complete",
       "file_path": "games/entry.html"
+    },
+    {
+      "id": "spec-002",
+      "description": "The Echoing Corridor: A sensory maze where players use sonar-like pings to reveal walls. Must manage 'noise levels' to avoid attracting shadowy entities.",
+      "status": "pending",
+      "file_path": "games/echoing_corridor.html"
+    },
+    {
+      "id": "spec-003",
+      "description": "The Prism Maze: A light-based puzzle where walls are invisible until illuminated. Players must navigate a dark labyrinth by strategically rotating mirrors and prisms to project a beam of light. Goal: Reach the central sanctum by correctly routing the beam through at least 5 mirrors.",
+      "status": "pending",
+      "file_path": "games/prism_maze.html"
+    },
+    {
+      "id": "spec-004",
+      "description": "The Shadow Path: A maze where visibility is tied to the player's movement. The path is only visible when the player is stationary. Moving causes the walls to 'blur' or disappear, requiring the player to remember the layout or move in short, deliberate bursts.",
+      "status": "pending",
+      "file_path": "games/shadow_path.html"
+    },
+    {
+      "id": "spec-005",
+      "description": "The Fractal Fold: A spatial puzzle maze where the player can 'fold' the current room's geometry, changing the connectivity between passages. Players must strategically fold and unfold sections to navigate around impassable walls and reach the exit.",
+      "status": "pending",
+      "game_path": "games/fractal_fold.html",
+      "spec_path": "specs/spec-005.md"
     }
   ]
 }
