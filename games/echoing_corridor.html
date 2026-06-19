@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            background-color: #0a0a0a;
+            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
             color: #e0e0e0;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
@@ -55,7 +55,11 @@
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="ui">
-        <div>NOISE LEVEL</div>
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <div>NOISE LEVEL</div>
+            <div id="score">SCORE: 0</div>
+            <div id="high-score">BEST: 0</div>
+        </div>
         <div class="noise-bar-container">
             <div id="noise-bar"></div>
         </div>

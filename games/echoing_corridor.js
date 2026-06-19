@@ -2,6 +2,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const noiseBar = document.getElementById('noise-bar');
 const statusText = document.getElementById('status');
+const scoreText = document.getElementById('score');
+const highScoreText = document.getElementById('high-score');
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
@@ -24,6 +26,11 @@ let goal = {
 let walls = [];
 let pings = [];
 let noiseLevel = 0;
+let score = 0;
+let highScore = localStorage.getItem('echoing_corridor_high_score') || 0;
+
+highScoreText.innerText = `BEST: ${highScore}`;
+
 let shadowEntity = {
     x: 800,
     y: 600,
@@ -114,6 +121,10 @@ function update() {
     if (noiseLevel < 0) noiseLevel = 0;
     noiseBar.style.width = `${noiseLevel}%`;
 
+    // Score increment
+    score += 0.1;
+    scoreText.innerText = `SCORE: ${Math.floor(score)}`;
+
     // Shadow Entity Logic
     if (noiseLevel > 50) {
         shadowEntity.active = true;
@@ -129,6 +140,13 @@ function update() {
     if (distToGoal < goal.radius + player.radius) {
         statusText.innerText = "STATUS: ESCAPED!";
         statusText.style.color = "#44ff44";
+        
+        if (score > highScore) {
+            highScore = Math.floor(score);
+            localStorage.setItem('echoing_corridor_high_score', highScore);
+            highScoreText.innerText = `BEST: ${highScore}`;
+        }
+        player.speed = 0;
     }
 
     // Check Game Over
@@ -136,6 +154,12 @@ function update() {
     if (shadowEntity.active && distToShadow < shadowEntity.radius + player.radius) {
         statusText.innerText = "STATUS: CONSUMED BY SHADOW";
         statusText.style.color = "#ff4444";
+        
+        if (score > highScore) {
+            highScore = Math.floor(score);
+            localStorage.setItem('echoing_corridor_high_score', highScore);
+            highScoreText.innerText = `BEST: ${highScore}`;
+        }
         player.speed = 0;
     }
 }
