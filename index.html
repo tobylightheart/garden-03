@@ -34,7 +34,7 @@
         }
         .maze-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 30px;
         }
         .game-card {
@@ -47,11 +47,21 @@
             text-decoration: none;
             color: inherit;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: block;
         }
         .game-card:hover {
             transform: translateY(-5px) scale(1.05);
             border-color: #fff;
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+        .game-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+        .game-card p {
+            font-size: 0.9rem;
+            color: #888;
+            margin: 0;
         }
         footer {
             margin-top: 4rem;
@@ -64,25 +74,11 @@
     <h1>THE MAZE</h1>
     <div class="maze-container">
         <div class="maze-grid">
-            <!-- Games will be injected here -->
-            <div class="game-card" style="border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
-                <a href="games/entry.html" style="text-decoration: none; color: inherit;">
-                    <h3 style="margin: 0; font-size: 1.5rem;">The Spooky Entry</h3>
-                    <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Navigate the void. Escape the shadows.</p>
-                </a>
-            </div>
-            <div class="game-card" style="border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
-                <a href="games/entry.html" style="text-decoration: none; color: inherit;">
-                    <h3 style="margin: 0; font-size: 1.5rem;">The Spooky Entry</h3>
-                    <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Navigate the void. Escape the shadows.</p>
-                </a>
-            </div>
-            <div class="game-card" style="border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.2);">
-                <a href="games/entry.html" style="text-decoration: none; color: inherit;">
-                    <h3 style="margin: 0; font-size: 1.5rem;">The Spooky Entry</h3>
-                    <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">Navigate the void. Escape the shadows.</p>
-                </a>
-            </div>
+            <!-- Game entries -->
+            <a href="games/echoing_corridor.html" class="game-card">
+                <h3>The Echoing Corridor</h3>
+                <p>Use sonar to navigate the void. Beware the shadows.</p>
+            </a>
         </div>
     </div>
     <footer>
