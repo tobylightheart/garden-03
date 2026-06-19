@@ -10,7 +10,7 @@
     {
       "id": "spec-002",
       "description": "The Echoing Corridor: A sensory maze where players use sonar-like pings to reveal walls. Must manage 'noise levels' to avoid attracting shadowy entities.",
-      "status": "pending",
+      "status": "complete",
       "file_path": "games/echoing_corridor.html"
     },
     {
