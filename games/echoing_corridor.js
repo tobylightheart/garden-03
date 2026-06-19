@@ -20,7 +20,8 @@ let player = {
 let goal = {
     x: 750,
     y: 550,
-    radius: 15
+    radius: 15,
+    pulse: 0
 };
 
 let walls = [];
@@ -36,8 +37,59 @@ let shadowEntity = {
     y: 600,
     radius: 12,
     speed: 1.2,
-    active: false
+    active: false,
+    lastHum: 0
 };
+
+// Audio System
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playPing() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.5);
+    
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+}
+
+function playShadowHum() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+    
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
 
 // Generate Maze (Simple grid-based walls)
 function initMaze() {
@@ -68,6 +120,8 @@ window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 canvas.addEventListener('mousedown', () => {
+    initAudio();
+    playPing();
     pings.push({
         x: player.x,
         y: player.y,
@@ -131,9 +185,18 @@ function update() {
         let angle = Math.atan2(player.y - shadowEntity.y, player.x - shadowEntity.x);
         shadowEntity.x += Math.cos(angle) * shadowEntity.speed;
         shadowEntity.y += Math.sin(angle) * shadowEntity.speed;
+        
+        // Play hum periodically
+        if (Date.now() - shadowEntity.lastHum > 500) {
+            playShadowHum();
+            shadowEntity.lastHum = Date.now();
+        }
     } else {
         shadowEntity.active = false;
     }
+
+    // Goal Pulse
+    goal.pulse += 0.1;
 
     // Check Win
     let distToGoal = Math.hypot(player.x - goal.x, player.y - goal.y);
@@ -168,18 +231,20 @@ function draw() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Draw Walls (Only if nearby or pinged)
-    ctx.fillStyle = '#333';
+    // Draw Walls (with flicker)
+    ctx.fillStyle = (Math.random() > 0.95) ? '#444' : '#333';
     for (let wall of walls) {
-        // Simple optimization: only draw if in view/near pings
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
     }
 
-    // Draw Goal
+    // Draw Goal (with pulse)
+    let pulseSize = goal.radius + Math.sin(goal.pulse) * 3;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(goal.x, goal.y, goal.radius, 0, Math.PI * 2);
+    ctx.arc(goal.x, goal.y, pulseSize, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#fff';
 
     // Draw Pings
     for (let p of pings) {
@@ -189,6 +254,9 @@ function draw() {
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.stroke();
     }
+
+    // Reset shadow blur for other elements
+    ctx.shadowBlur = 0;
 
     // Draw Player
     ctx.fillStyle = player.color;
@@ -203,8 +271,10 @@ function draw() {
         ctx.arc(shadowEntity.x, shadowEntity.y, shadowEntity.radius, 0, Math.PI * 2);
         ctx.fill();
         // Glow
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.shadowColor = 'red';
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
