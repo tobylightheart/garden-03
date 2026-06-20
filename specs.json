@@ -16,7 +16,7 @@
     {
       "id": "spec-003",
       "description": "The Prism Maze: A light-based puzzle where walls are invisible until illuminated. Players must navigate a dark labyrinth by strategically rotating mirrors and prisms to project a beam of light. Goal: Reach the central sanctum by correctly routing the beam through at least 5 mirrors.",
-      "status": "pending",
+      "status": "complete",
       "file_path": "games/prism_maze.html"
     },
     {
