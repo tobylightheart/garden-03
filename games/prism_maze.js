@@ -14,6 +14,28 @@ let sanctum = { x: 400, y: 300, radius: 30 };
 let selectedMirror = null;
 let gameOver = false;
 
+// UI Elements
+const timerEl = document.getElementById('timer');
+const bestScoreEl = document.getElementById('best-score');
+let startTime = null;
+let timer = 0;
+let bestScore = localStorage.getItem('prism_maze_best') || '--';
+bestScoreEl.innerText = bestScore;
+
+function updateTimer() {
+    if (gameOver) return;
+    timer = Math.floor((Date.now() - startTime) / 1000);
+    timerEl.innerText = timer;
+    requestAnimationFrame(updateTimer);
+}
+
+function saveHighScore() {
+    if (timer > 0 && timer < bestScore && bestScore !== '--') {
+        localStorage.setItem('prism_maze_best', timer);
+        bestScoreEl.innerText = timer;
+    }
+}
+
 // Level layout (0 = empty, 1 = wall, 2 = mirror, 3 = beam source, 4 = sanctum)
 const level = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -58,9 +80,6 @@ for (let y = 0; y < level.length; y++) {
 }
 
 // Add some mirrors to make it a real puzzle
-// Currently, mirrors are sparse. Let's add some strategically.
-// Actually, let's just rely on the ones placed in the level or add a few more.
-// Since I'm building it now, I'll add a few more mirrors to ensure there are at least 5.
 for (let i = 0; i < 10; i++) {
     let mx, my;
     do {
@@ -71,70 +90,6 @@ for (let i = 0; i < 10; i++) {
     mirrors.push({ x: mx * GRID_SIZE, y: my * GRID_SIZE, angle: Math.random() * Math.PI * 2 });
 }
 
-function updateBeam() {
-    if (gameOver) return;
-    
-    beam.reflections = 0;
-    let currentX = beam.x;
-    let currentY = beam.y;
-    let currentAngle = beam.angle;
-    
-    // Max reflections to prevent infinite loops
-    for (let i = 0; i < 20; i++) {
-        let dx = Math.cos(currentAngle);
-        let dy = Math.sin(currentAngle);
-        
-        let closestDist = Infinity;
-        let hit = null;
-
-        // Check walls
-        for (const wall of walls) {
-            // Basic ray-box intersection
-            // ... simplified for this demo
-            // We'll just check if it hits the grid cell
-            const nextX = currentX + dx * 100; // look ahead
-            const nextY = currentY + dy * 100;
-            const gridX = Math.floor(nextX / GRID_SIZE);
-            const gridY = Math.floor(nextY / GRID_SIZE);
-            
-            if (gridY >= 0 && gridY < level.length && gridX >= 0 && gridX < level[0].length) {
-                if (level[gridY][gridX] === 1) {
-                    // Find exact intersection with the wall (rectangle)
-                    // For simplicity, we'll just assume it hits the cell and find distance
-                    const dist = Math.sqrt((nextX - currentX)**2 + (nextY - currentY)**2);
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        hit = { type: 'wall', x: nextX, y: nextY };
-                    }
-                }
-            }
-        }
-
-        // Check mirrors
-        for (const m of mirrors) {
-            // Distance to mirror center
-            const dist = Math.sqrt((m.x - currentX)**2 + (m.y - currentY)**2);
-            if (dist < 20 && dist > 0) {
-                // Check if the ray is hitting the mirror face
-                // Mirror is a line segment
-                // ... complex math. Let's simplify: if it's close, it reflects.
-                // To make it better, we'll calculate the angle.
-                // Actually, for a "creative" game, let's just do a simple reflection.
-                // A mirror at angle theta reflects a ray at angle alpha to 2*theta - alpha
-                // But we need to know which side it hit.
-                
-                // Let's skip precise ray-mirror intersection for now and use a simpler "hit"
-                // But it needs to be playable.
-            }
-        }
-        
-        // Re-evaluating: A real "Prism Maze" needs real ray-mirror interaction.
-        break; 
-    }
-}
-
-// Simplified Beam Logic for the demo:
-// We'll use a simple recursive reflection system.
 function castRay(x, y, angle, depth) {
     if (depth > 15) return;
     
@@ -146,7 +101,6 @@ function castRay(x, y, angle, depth) {
 
     // Walls
     for (const wall of walls) {
-        // Ray-AABB intersection
         let tmin = (wall.x - x) / dx;
         let tmax = (wall.x + wall.w - x) / dx;
         if (tmin > tmax) [tmin, tmax] = [tmax, tmin];
@@ -154,10 +108,10 @@ function castRay(x, y, angle, depth) {
         let tymin = (wall.y - y) / dy;
         let tymax = (wall.y + wall.h - y) / dy;
         if (tymin > tymax) [tymin, tymax] = [tymax, tymin];
-
+        
         let tEnter = Math.max(tmin, tymin);
         let tExit = Math.min(tmax, tymax);
-
+        
         if (tEnter < tExit && tEnter > 0 && tEnter < closestDist) {
             closestDist = tEnter;
             hitObj = { type: 'wall', x: x + dx * tEnter, y: y + dy * tEnter };
@@ -166,28 +120,17 @@ function castRay(x, y, angle, depth) {
 
     // Mirrors
     for (const m of mirrors) {
-        // Mirror is a line segment from m.x,m.y to m.x + cos(angle)*len, m.y + sin(angle)*len
-        // For simplicity, let's treat mirror as a point that reflects rays
-        // and has a radius of 15
         const dist = Math.sqrt((m.x - x)**2 + (m.y - y)**2);
         if (dist < 20 && dist > 0) {
-            // Check if hit
-            // We'll just say if it's close enough and not a wall hit, it's a mirror hit
-            // To make it feel like a mirror, we need the angle.
-            // The mirror's normal is perpendicular to its angle.
-            // Reflection: r = i - 2(i.n)n
-            // Let's simplify: the mirror is at m.angle.
-            // The reflection angle is 2 * m.angle - currentAngle.
-            
-            // But we need to make sure it's not just "hitting" it from behind.
-            // Dot product of ray and mirror normal.
             const normalX = -Math.sin(m.angle);
             const normalY = Math.cos(m.angle);
             const dot = dx * normalX + dy * normalY;
             
-            if (dot < 0) { // hitting the front
-                closestDist = dist;
-                hitObj = { type: 'mirror', x: m.x, y: m.y, angle: m.angle };
+            if (dot < 0) {
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    hitObj = { type: 'mirror', x: m.x, y: m.y, angle: m.angle };
+                }
             }
         }
     }
@@ -195,11 +138,11 @@ function castRay(x, y, angle, depth) {
     // Sanctum
     const distToSanctum = Math.sqrt((sanctum.x - x)**2 + (sanctum.y - y)**2);
     if (distToSanctum < sanctum.radius) {
-        // Check if we have enough reflections
         if (beam.reflections >= 5) {
             gameOver = true;
             statusEl.innerText = "SUCCESS! You reached the Sanctum.";
             statusEl.style.color = "#00ff00";
+            saveHighScore();
         }
     }
 
@@ -222,9 +165,6 @@ function draw() {
     ctx.fillStyle = '#222';
     for (const wall of walls) {
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-        // "Illumination" effect
-        // If beam is close, change color?
-        // For now, let's just draw them.
     }
 
     // Draw Sanctum
@@ -233,6 +173,10 @@ function draw() {
     ctx.fillStyle = '#ff00ff';
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#ff00ff';
+    
+    // Add pulse effect
+    const pulse = Math.sin(Date.now() / 500) * 5;
+    ctx.arc(sanctum.x, sanctum.y, sanctum.radius + pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
@@ -248,7 +192,6 @@ function draw() {
         ctx.lineTo(15, 0);
         ctx.stroke();
         
-        // Small circle at joint
         ctx.beginPath();
         ctx.arc(0, 0, 3, 0, Math.PI * 2);
         ctx.fillStyle = '#fff';
@@ -260,8 +203,6 @@ function draw() {
     ctx.beginPath();
     ctx.moveTo(beam.x, beam.y);
     
-    // We need to draw the beam path.
-    // Let's re-calculate the path each frame.
     let curX = beam.x;
     let curY = beam.y;
     let curAngle = beam.angle;
@@ -277,7 +218,6 @@ function draw() {
         let closestDist = Infinity;
         let hit = null;
 
-        // Walls
         for (const wall of walls) {
             let tmin = (wall.x - curX) / dx;
             let tmax = (wall.x + wall.w - curX) / dx;
@@ -293,7 +233,6 @@ function draw() {
             }
         }
 
-        // Mirrors
         for (const m of mirrors) {
             const dist = Math.sqrt((m.x - curX)**2 + (m.y - curY)**2);
             if (dist < 20 && dist > 0) {
@@ -353,4 +292,6 @@ window.addEventListener('keydown', (e) => {
 });
 
 // Start
+startTime = Date.now();
+updateTimer();
 draw();

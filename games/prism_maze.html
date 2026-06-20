@@ -39,11 +39,16 @@
             color: #00d4ff;
             margin-bottom: 10px;
         }
+        .stats {
+            color: #888;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>The Prism Maze</h1>
     <div class="status" id="status">Route the beam to the Sanctum</div>
+    <div class="stats" id="stats">Time: <span id="timer">0</span>s | Best: <span id="best-score">--</span></div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div class="ui">
         <p>The walls are invisible until the light touches them. Rotate the mirrors to guide the beam through at least 5 reflections to the central sanctum.</p>
