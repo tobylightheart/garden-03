@@ -4,6 +4,7 @@ const noiseBar = document.getElementById('noise-bar');
 const statusText = document.getElementById('status');
 const scoreText = document.getElementById('score');
 const highScoreText = document.getElementById('high-score');
+const timerText = document.getElementById('timer');
 
 const GAME_WIDTH = canvas.width;
 const GAME_HEIGHT = canvas.height;
@@ -26,11 +27,17 @@ let goal = {
 
 let walls = [];
 let pings = [];
+let particles = [];
 let noiseLevel = 0;
 let score = 0;
 let highScore = localStorage.getItem('echoing_corridor_high_score') || 0;
 
+// Time Attack State
+let gameTime = 120; // 2 minutes
+let gameActive = true;
+
 highScoreText.innerText = `BEST: ${highScore}`;
+timerText.innerText = `TIME: 02:00`;
 
 let shadowEntity = {
     x: 800,
@@ -40,6 +47,9 @@ let shadowEntity = {
     active: false,
     lastHum: 0
 };
+
+// Visual Polish
+let shakeIntensity = 0;
 
 // Audio System
 let audioCtx = null;
@@ -91,7 +101,21 @@ function playShadowHum() {
     osc.stop(audioCtx.currentTime + 0.1);
 }
 
-// Generate Maze (Simple grid-based walls)
+function createParticles(x, y, color, count = 10) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4,
+            life: 1.0,
+            color: color,
+            size: Math.random() * 3 + 1
+        });
+    }
+}
+
+// Generate Maze
 function initMaze() {
     walls = [];
     // Outer boundaries
@@ -99,14 +123,13 @@ function initMaze() {
     walls.push({x: 0, y: 590, w: 800, h: 10});
     walls.push({x: 0, y: 0, w: 10, h: 600});
     walls.push({x: 790, y: 0, w: 10, h: 600});
-
+    
     // Random internal walls
     for (let i = 0; i < 15; i++) {
         let w = Math.random() * 200 + 50;
         let h = Math.random() * 200 + 50;
         let x = Math.random() * (GAME_WIDTH - w);
         let y = Math.random() * (GAME_HEIGHT - h);
-        // Don't block the start or end
         if (x < 150 || y < 150 || x > 600 || y > 400) {
             walls.push({x, y, w, h});
         }
@@ -120,6 +143,7 @@ window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 canvas.addEventListener('mousedown', () => {
+    if (!gameActive) return;
     initAudio();
     playPing();
     pings.push({
@@ -131,9 +155,24 @@ canvas.addEventListener('mousedown', () => {
         opacity: 1
     });
     noiseLevel += 25;
+    createParticles(player.x, player.y, '#fff', 15);
 });
 
 function update() {
+    if (!gameActive) return;
+
+    // Time Attack Logic
+    gameTime -= 1/60;
+    let mins = Math.floor(gameTime / 60);
+    let secs = Math.floor(gameTime % 60);
+    timerText.innerText = `TIME: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+    if (gameTime <= 0) {
+        gameActive = false;
+        statusText.innerText = "STATUS: TIME EXPIRED";
+        statusText.style.color = "#ff4444";
+    }
+
     // Movement
     let dx = 0;
     let dy = 0;
@@ -170,6 +209,17 @@ function update() {
         }
     }
 
+    // Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+
     // Noise Decay
     noiseLevel -= 0.5;
     if (noiseLevel < 0) noiseLevel = 0;
@@ -186,6 +236,9 @@ function update() {
         shadowEntity.x += Math.cos(angle) * shadowEntity.speed;
         shadowEntity.y += Math.sin(angle) * shadowEntity.speed;
         
+        // Screen shake
+        shakeIntensity = 3;
+
         // Play hum periodically
         if (Date.now() - shadowEntity.lastHum > 500) {
             playShadowHum();
@@ -194,6 +247,8 @@ function update() {
     } else {
         shadowEntity.active = false;
     }
+    
+    if (shakeIntensity > 0) shakeIntensity *= 0.9;
 
     // Goal Pulse
     goal.pulse += 0.1;
@@ -201,6 +256,7 @@ function update() {
     // Check Win
     let distToGoal = Math.hypot(player.x - goal.x, player.y - goal.y);
     if (distToGoal < goal.radius + player.radius) {
+        gameActive = false;
         statusText.innerText = "STATUS: ESCAPED!";
         statusText.style.color = "#44ff44";
         
@@ -209,12 +265,12 @@ function update() {
             localStorage.setItem('echoing_corridor_high_score', highScore);
             highScoreText.innerText = `BEST: ${highScore}`;
         }
-        player.speed = 0;
     }
 
     // Check Game Over
     let distToShadow = Math.hypot(player.x - shadowEntity.x, player.y - shadowEntity.y);
     if (shadowEntity.active && distToShadow < shadowEntity.radius + player.radius) {
+        gameActive = false;
         statusText.innerText = "STATUS: CONSUMED BY SHADOW";
         statusText.style.color = "#ff4444";
         
@@ -223,27 +279,34 @@ function update() {
             localStorage.setItem('echoing_corridor_high_score', highScore);
             highScoreText.innerText = `BEST: ${highScore}`;
         }
-        player.speed = 0;
     }
 }
 
 function draw() {
+    ctx.save();
+    
+    // Screen Shake
+    if (shakeIntensity > 0.1) {
+        ctx.translate(Math.random() * shakeIntensity, Math.random() * shakeIntensity);
+    }
+
+    // Background
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Draw Walls (with flicker)
-    ctx.fillStyle = (Math.random() > 0.95) ? '#444' : '#333';
+    // Draw Walls
+    ctx.fillStyle = (Math.random() > 0.98) ? '#444' : '#333';
     for (let wall of walls) {
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
     }
 
-    // Draw Goal (with pulse)
+    // Draw Goal
     let pulseSize = goal.radius + Math.sin(goal.pulse) * 3;
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(goal.x, goal.y, pulseSize, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 15;
     ctx.shadowColor = '#fff';
 
     // Draw Pings
@@ -255,8 +318,18 @@ function draw() {
         ctx.stroke();
     }
 
-    // Reset shadow blur for other elements
+    // Reset shadow blur
     ctx.shadowBlur = 0;
+
+    // Draw Particles
+    for (let p of particles) {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
 
     // Draw Player
     ctx.fillStyle = player.color;
@@ -271,13 +344,15 @@ function draw() {
         ctx.arc(shadowEntity.x, shadowEntity.y, shadowEntity.radius, 0, Math.PI * 2);
         ctx.fill();
         // Glow
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 25;
         ctx.shadowColor = 'red';
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
+
+    ctx.restore();
 
     requestAnimationFrame(() => {
         update();
