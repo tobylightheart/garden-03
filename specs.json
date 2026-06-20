@@ -26,11 +26,11 @@
       "file_path": "games/shadow_path.html"
     },
     {
-      "id": "spec-005",
-      "description": "The Fractal Fold: A spatial puzzle maze where the player can 'fold' the current room's geometry, changing the connectivity between passages. Players must strategically fold and unfold sections to navigate around impassable walls and reach the exit.",
+      "id": "spec-006",
+      "description": "The Weight of Shadow: A balance-based maze where the floor tilts if the player remains stationary. Players must maintain momentum to avoid sliding into pits, but some 'Stasis Gates' require them to stand perfectly still for 3 seconds to unlock.",
       "status": "pending",
-      "game_path": "games/fractal_fold.html",
-      "spec_path": "specs/spec-005.md"
+      "game_path": "games/weight_of_shadow.html",
+      "spec_path": "specs/spec-006.md"
     }
   ]
 }
