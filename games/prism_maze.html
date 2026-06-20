@@ -6,21 +6,20 @@
     <title>The Prism Maze</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background: #050505;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         canvas {
-            border: 2px solid #444;
-            box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             background: #000;
             max-width: 90vw;
             max-height: 70vh;
@@ -33,11 +32,12 @@
         .controls {
             margin-top: 10px;
             font-size: 0.9em;
-            color: #aaa;
+            color: #888;
         }
         .status {
             font-weight: bold;
             color: #00d4ff;
+            margin-bottom: 10px;
         }
     </style>
 </head>

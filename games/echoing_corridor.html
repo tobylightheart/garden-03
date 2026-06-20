@@ -6,26 +6,39 @@
     <title>The Echoing Corridor</title>
     <style>
         body {
-            margin: 0;
-            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+            background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
             color: #e0e0e0;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
         canvas {
-            border: 2px solid #333;
-            background-color: #000;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background: #000;
             cursor: crosshair;
+            max-width: 90vw;
+            max-height: 70vh;
         }
-        #ui {
+        .instructions {
+            font-size: 0.9rem;
+            color: #888;
+            max-width: 600px;
+            margin-bottom: 10px;
+        }
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
             margin-top: 20px;
-            text-align: center;
+        }
+        .stats-item {
+            font-size: 0.9rem;
         }
         .noise-bar-container {
             width: 300px;
@@ -40,11 +53,8 @@
             background: #ff4444;
             transition: width 0.1s;
         }
-        .instructions {
-            font-size: 0.9rem;
-            color: #888;
-            max-width: 600px;
-            margin-bottom: 10px;
+        #status {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -54,17 +64,15 @@
         High noise levels attract the Shadowy Entity. Reach the white goal.
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="ui">
-        <div style="display: flex; gap: 20px; justify-content: center;">
-            <div>NOISE LEVEL</div>
-            <div id="score">SCORE: 0</div>
-            <div id="high-score">BEST: 0</div>
-        </div>
-        <div class="noise-bar-container">
-            <div id="noise-bar"></div>
-        </div>
-        <div id="status">STATUS: EXPLORING</div>
+    <div class="stats-container">
+        <div class="stats-item">NOISE LEVEL</div>
+        <div id="score" class="stats-item">SCORE: 0</div>
+        <div id="high-score" class="stats-item">BEST: 0</div>
     </div>
+    <div class="noise-bar-container">
+        <div id="noise-bar"></div>
+    </div>
+    <div id="status">STATUS: EXPLORING</div>
     <script src="echoing_corridor.js"></script>
 </body>
 </html>
