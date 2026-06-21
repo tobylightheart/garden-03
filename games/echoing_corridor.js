@@ -150,9 +150,10 @@ canvas.addEventListener('mousedown', () => {
         x: player.x,
         y: player.y,
         radius: 0,
-        maxRadius: 150,
-        speed: 4,
-        opacity: 1
+        maxRadius: 250,
+        speed: 5,
+        opacity: 1,
+        pulse: 0
     });
     noiseLevel += 25;
     createParticles(player.x, player.y, '#fff', 15);
@@ -204,6 +205,7 @@ function update() {
         let p = pings[i];
         p.radius += p.speed;
         p.opacity -= 0.01;
+        p.pulse += 0.2;
         if (p.radius > p.maxRadius || p.opacity <= 0) {
             pings.splice(i, 1);
         }
@@ -238,7 +240,7 @@ function update() {
         
         // Screen shake
         shakeIntensity = 3;
-
+        
         // Play hum periodically
         if (Date.now() - shadowEntity.lastHum > 500) {
             playShadowHum();
@@ -289,17 +291,17 @@ function draw() {
     if (shakeIntensity > 0.1) {
         ctx.translate(Math.random() * shakeIntensity, Math.random() * shakeIntensity);
     }
-
+    
     // Background
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
+    
     // Draw Walls
     ctx.fillStyle = (Math.random() > 0.98) ? '#444' : '#333';
     for (let wall of walls) {
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
     }
-
+    
     // Draw Goal
     let pulseSize = goal.radius + Math.sin(goal.pulse) * 3;
     ctx.fillStyle = '#fff';
@@ -308,19 +310,19 @@ function draw() {
     ctx.fill();
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#fff';
-
+    
     // Draw Pings
     for (let p of pings) {
         ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity})`;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 + Math.sin(p.pulse) * 1.5;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.stroke();
     }
-
+    
     // Reset shadow blur
     ctx.shadowBlur = 0;
-
+    
     // Draw Particles
     for (let p of particles) {
         ctx.fillStyle = p.color;
@@ -330,13 +332,13 @@ function draw() {
         ctx.fill();
     }
     ctx.globalAlpha = 1.0;
-
+    
     // Draw Player
     ctx.fillStyle = player.color;
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
     ctx.fill();
-
+    
     // Draw Shadow
     if (shadowEntity.active) {
         ctx.fillStyle = 'rgba(100, 0, 0, 0.8)';
@@ -351,9 +353,16 @@ function draw() {
         ctx.stroke();
         ctx.shadowBlur = 0;
     }
-
+    
+    // Fog of War
+    let fogGradient = ctx.createRadialGradient(player.x, player.y, 60, player.x, player.y, 250);
+    fogGradient.addColorStop(0, 'rgba(0,0,0,0)');
+    fogGradient.addColorStop(1, 'rgba(0,0,0,0.98)');
+    ctx.fillStyle = fogGradient;
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
     ctx.restore();
-
+    
     requestAnimationFrame(() => {
         update();
         draw();
