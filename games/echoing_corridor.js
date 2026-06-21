@@ -168,10 +168,15 @@ function update() {
     let secs = Math.floor(gameTime % 60);
     timerText.innerText = `TIME: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
+    if (gameTime < 20) {
+        timerText.classList.add('critical-time');
+    }
+    
     if (gameTime <= 0) {
         gameActive = false;
         statusText.innerText = "STATUS: TIME EXPIRED";
         statusText.style.color = "#ff4444";
+        shakeIntensity = 10;
     }
 
     // Movement
@@ -226,6 +231,11 @@ function update() {
     noiseLevel -= 0.5;
     if (noiseLevel < 0) noiseLevel = 0;
     noiseBar.style.width = `${noiseLevel}%`;
+    if (noiseLevel > 70) {
+        noiseBar.classList.add('noise-bar-high');
+    } else {
+        noiseBar.classList.remove('noise-bar-high');
+    }
 
     // Score increment
     score += 0.1;
@@ -261,6 +271,7 @@ function update() {
         gameActive = false;
         statusText.innerText = "STATUS: ESCAPED!";
         statusText.style.color = "#44ff44";
+        createParticles(player.x, player.y, '#44ff44', 50);
         
         if (score > highScore) {
             highScore = Math.floor(score);
@@ -275,6 +286,8 @@ function update() {
         gameActive = false;
         statusText.innerText = "STATUS: CONSUMED BY SHADOW";
         statusText.style.color = "#ff4444";
+        shakeIntensity = 20;
+        createParticles(player.x, player.y, '#f00', 30);
         
         if (score > highScore) {
             highScore = Math.floor(score);

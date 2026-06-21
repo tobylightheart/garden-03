@@ -107,9 +107,25 @@ canvas {
     margin: 10px 0;
 }
 
-#noise-bar {
-    height: 100%;
-    width: 0%;
     background: #ff4444;
     transition: width 0.1s;
+    box-shadow: 0 0 10px #ff4444;
+}
+
+.noise-bar-high {
+    animation: pulse-red 0.5s infinite alternate;
+}
+
+@keyframes pulse-red {
+    from { box-shadow: 0 0 5px #ff4444; }
+    to { box-shadow: 0 0 15px #ff4444; }
+}
+
+.critical-time {
+    color: #ff4444;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.5; }
 }
