@@ -31,6 +31,13 @@
       "status": "pending",
       "game_path": "games/weight_of_shadow.html",
       "spec_path": "specs/spec-006.md"
+    },
+    {
+      "id": "spec-007",
+      "description": "The Weaver's Thread: A spatial puzzle where players manipulate the maze's geometry by 'weaving' threads between anchor points. Players must create a continuous path from start to finish by strategically placing and connecting threads, while avoiding 'snag' points that reset the thread.",
+      "status": "pending",
+      "game_path": "games/weavers_thread.html",
+      "spec_path": "specs/spec-007.md"
     }
   ]
 }
