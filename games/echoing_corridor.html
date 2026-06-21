@@ -4,76 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Echoing Corridor</title>
-    <style>
-        body {
-            background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
-            color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-        canvas {
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            background: #000;
-            cursor: crosshair;
-            max-width: 90vw;
-            max-height: 70vh;
-        }
-        .instructions {
-            font-size: 0.9rem;
-            color: #888;
-            max-width: 600px;
-            margin-bottom: 10px;
-        }
-        .stats-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .stats-item {
-            font-size: 0.9rem;
-        }
-        .noise-bar-container {
-            width: 300px;
-            height: 20px;
-            background: #222;
-            border: 1px solid #444;
-            margin: 10px 0;
-        }
-        #noise-bar {
-            height: 100%;
-            width: 0%;
-            background: #ff4444;
-            transition: width 0.1s;
-        }
-        #status {
-            margin-top: 10px;
-        }
-    </style>
-</head>
+    <link rel=\"stylesheet\" href=\"../styles.css\">\n</head>
 <body>
-    <div class="instructions">
-        Use WASD/Arrows to move. Click to send a SONAR PING.<br>
-        High noise levels attract the Shadowy Entity. Reach the white goal.
+    <div class="ui-container">
+        <div class="instructions">
+            Use WASD/Arrows to move. Click to send a SONAR PING.<br>
+            High noise levels attract the Shadowy Entity. Reach the white goal.
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="stats-container">
+            <div class="stats-item">NOISE LEVEL</div>
+            <div id="score" class="stats-item">SCORE: 0</div>
+            <div id="high-score" class="stats-item">BEST: 0</div>
+            <div id="timer" class="stats-item">TIME: 00:00</div>
+        </div>
+        <div class="noise-bar-container">
+            <div id="noise-bar"></div>
+        </div>
+        <div id="status">STATUS: EXPLORING</div>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="stats-container">
-        <div class="stats-item">NOISE LEVEL</div>
-        <div id="score" class="stats-item">SCORE: 0</div>
-        <div id="high-score" class="stats-item">BEST: 0</div>
-        <div id="timer" class="stats-item">TIME: 00:00</div>
-    </div>
-    <div class="noise-bar-container">
-        <div id="noise-bar"></div>
-    </div>
-    <div id="status">STATUS: EXPLORING</div>
     <script src="echoing_corridor.js"></script>
 </body>
 </html>
