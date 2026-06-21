@@ -22,7 +22,7 @@
     {
       "id": "spec-004",
       "description": "The Shadow Path: A maze where visibility is tied to the player's movement. The path is only visible when the player is stationary. Moving causes the walls to 'blur' or disappear, requiring the player to remember the layout or move in short, deliberate bursts.",
-      "status": "pending",
+      "status": "complete",
       "file_path": "games/shadow_path.html"
     },
     {
