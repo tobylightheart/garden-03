@@ -16,6 +16,33 @@ let sanctum = { x: 400, y: 300, radius: 30 };
 let selectedMirror = null;
 let gameOver = false;
 
+// Particle system
+let particles = [];
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.life = 1.0;
+        this.decay = Math.random() * 0.02 + 0.01;
+        this.color = color;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
 // Audio setup
 let audioCtx = null;
 function initAudio() {
@@ -78,13 +105,13 @@ function updateTimer() {
     } else {
         timerEl.classList.remove('critical-time');
     }
-
+    
     if (timeLeft <= 0) {
         gameOver = true;
         statusEl.innerText = "TIME EXPIRED!";
         statusEl.style.color = "#ff4444";
     }
-
+    
     requestAnimationFrame(updateTimer);
 }
 
@@ -150,14 +177,16 @@ for (let i = 0; i < 10; i++) {
     mirrors.push({ x: mx * GRID_SIZE, y: my * GRID_SIZE, angle: Math.random() * Math.PI * 2 });
 }
 
-function castRay(x, y, angle, depth) {
-    if (depth > 15) return;
+function castRay(x, y, angle, depth, path = []) {
+    if (depth > 15) return path;
     
     let dx = Math.cos(angle);
     let dy = Math.sin(angle);
     
     let closestDist = Infinity;
     let hitObj = null;
+    
+    path.push({ x, y, dx, dy });
 
     // Walls
     for (const wall of walls) {
@@ -210,29 +239,57 @@ function castRay(x, y, angle, depth) {
     if (hitObj) {
         if (hitObj.type === 'mirror') {
             beam.reflections++;
-            const newAngle = 2 * hitObj.angle - beam.angle;
-            castRay(hitObj.x, hitObj.y, newAngle, depth + 1);
+            // Spawn particles
+            for (let i = 0; i < 5; i++) {
+                particles.push(new Particle(hitObj.x, hitObj.y, '#00d4ff'));
+            }
+            const newAngle = 2 * hitObj.angle - angle;
+            castRay(hitObj.x, hitObj.y, newAngle, depth + 1, path);
         } else {
             // Hit wall, stop.
+            path.push({ x: hitObj.x, y: hitObj.y, dx: 0, dy: 0 });
         }
+    } else {
+        path.push({ x: x + dx * closestDist, y: y + dy * closestDist, dx: 0, dy: 0 });
     }
+    
+    return path;
 }
 
 // Rendering
+let currentBeamPath = [];
+
 function draw() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-    // Draw Walls
-    ctx.fillStyle = '#222';
+    // Update and draw particles
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => {
+        p.update();
+        p.draw(ctx);
+    });
+
+    // Draw Walls (Dynamic Lighting)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)'; // Very dim base
     for (const wall of walls) {
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
     }
+
+    // Draw "Lit" Walls
+    ctx.fillStyle = 'rgba(0, 212, 255, 0.15)';
+    currentBeamPath.forEach(p => {
+        // Draw a small radius of light around each point of the beam
+        const litRadius = 40;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, litRadius, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
     // Draw Sanctum
     ctx.beginPath();
     ctx.arc(sanctum.x, sanctum.y, sanctum.radius, 0, Math.PI * 2);
     ctx.fillStyle = '#ff00ff';
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = 15 + Math.sin(Date.now() / 500) * 5;
     ctx.shadowColor = '#ff00ff';
     
     const pulse = Math.sin(Date.now() / 500) * 5;
@@ -245,6 +302,13 @@ function draw() {
         ctx.save();
         ctx.translate(m.x, m.y);
         ctx.rotate(m.angle);
+        
+        // Glow
+        if (selectedMirror === m) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#fff';
+        }
+
         ctx.strokeStyle = selectedMirror === m ? '#fff' : '#00d4ff';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -261,69 +325,18 @@ function draw() {
 
     // Draw Beam
     ctx.beginPath();
-    ctx.moveTo(beam.x, beam.y);
-    
-    let curX = beam.x;
-    let curY = beam.y;
-    let curAngle = beam.angle;
-    ctx.strokeStyle = '#00d4ff';
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 5;
-    ctx.shadowColor = '#00d4ff';
-    
-    ctx.moveTo(curX, curY);
-    for (let i = 0; i < 15; i++) {
-        let dx = Math.cos(curAngle);
-        let dy = Math.sin(curAngle);
-        let closestDist = Infinity;
-        let hit = null;
-
-        for (const wall of walls) {
-            let tmin = (wall.x - curX) / dx;
-            let tmax = (wall.x + wall.w - curX) / dx;
-            if (tmin > tmax) [tmin, tmax] = [tmax, tmin];
-            let tymin = (wall.y - curY) / dy;
-            let tymax = (wall.y + wall.h - curY) / dy;
-            if (tymin > tymax) [tymin, tymax] = [tymax, tymin];
-            let tEnter = Math.max(tmin, tymin);
-            let tExit = Math.min(tmax, tymax);
-            if (tEnter < tExit && tEnter > 0 && tEnter < closestDist) {
-                closestDist = tEnter;
-                hit = { type: 'wall', x: curX + dx * tEnter, y: curY + dy * tEnter };
-            }
+    if (currentBeamPath.length > 0) {
+        ctx.moveTo(currentBeamPath[0].x, currentBeamPath[0].y);
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#00d4ff';
+        
+        for (let i = 1; i < currentBeamPath.length; i++) {
+            ctx.lineTo(currentBeamPath[i].x, currentBeamPath[i].y);
         }
-
-        for (const m of mirrors) {
-            const dist = Math.sqrt((m.x - curX)**2 + (m.y - curY)**2);
-            if (dist < 20 && dist > 0) {
-                const normalX = -Math.sin(m.angle);
-                const normalY = Math.cos(m.angle);
-                const dot = dx * normalX + dy * normalY;
-                if (dot < 0) {
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        hit = { type: 'mirror', x: m.x, y: m.y, angle: m.angle };
-                    }
-                }
-            }
-        }
-
-        if (hit) {
-            ctx.lineTo(hit.x, hit.y);
-            if (hit.type === 'mirror') {
-                curX = hit.x;
-                curY = hit.y;
-                curAngle = 2 * hit.angle - curAngle;
-                beam.reflections++;
-            } else {
-                break;
-            }
-        } else {
-            ctx.lineTo(curX + dx * closestDist, curY + dy * closestDist);
-            break;
-        }
+        ctx.stroke();
     }
-    ctx.stroke();
     ctx.shadowBlur = 0;
 
     requestAnimationFrame(draw);
@@ -356,4 +369,11 @@ window.addEventListener('keydown', (e) => {
 // Start
 startTime = Date.now();
 updateTimer();
+
+// Re-calculate beam path every frame for dynamic lighting
+function animateBeam() {
+    currentBeamPath = castRay(beam.x, beam.y, beam.angle, 0);
+    requestAnimationFrame(animateBeam);
+}
+animateBeam();
 draw();
