@@ -26,6 +26,13 @@
       "file_path": "games/shadow_path.html"
     },
     {
+      "id": "spec-005",
+      "description": "The Fractal Fold: A maze where the player can 'fold' rooms, rotating the connectivity of passages to find a path through non-Euclidean space.",
+      "status": "pending",
+      "game_path": "games/fractal_fold.html",
+      "spec_path": "specs/spec-005.md"
+    },
+    {
       "id": "spec-006",
       "description": "The Weight of Shadow: A balance-based maze where the floor tilts if the player remains stationary. Players must maintain momentum to avoid sliding into pits, but some 'Stasis Gates' require them to stand perfectly still for 3 seconds to unlock.",
       "status": "pending",
@@ -38,6 +45,13 @@
       "status": "pending",
       "game_path": "games/weavers_thread.html",
       "spec_path": "specs/spec-007.md"
+    },
+    {
+      "id": "spec-008",
+      "description": "The Synchronized Labyrinth: A dual-perspective maze where players navigate two parallel rooms (A and B). Actions in Room A (like moving a block or opening a gate) have mirror effects in Room B, requiring players to synchronize movements to clear both paths simultaneously.",
+      "status": "pending",
+      "game_path": "games/synchronized_labyrinth.html",
+      "spec_path": "specs/spec-008.md"
     }
   ]
 }
