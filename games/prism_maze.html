@@ -6,19 +6,19 @@
     <title>The Prism Maze</title>
     <link rel="stylesheet" href="../styles.css">
 </head>
-<body>
-    <h1>The Prism Maze</h1>
+<body
     <div class="ui-container">
+        <h1 class="ui-header">The Prism Maze</h1>
         <div class="status" id="status">Route the beam to the Sanctum</div>
         <div class="stats" id="stats">Time: <span id="timer">0</span>s | Best: <span id="best-score">--</span></div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div class="instructions">
             <p>The walls are invisible until the light touches them. Rotate the mirrors to guide the beam through at least 5 reflections to the central sanctum.</p>
             <div class="controls">
-                Click on a mirror to select it. Use <b>Left/Right Arrow Keys</b> to rotate.
+                Click on a mirror to select it. Use <b class="key">Left/Right Arrow Keys</b> to rotate.
             </div>
         </div>
     </div>
     <script src="prism_maze.js"></script>
 </body>
-</html>
+

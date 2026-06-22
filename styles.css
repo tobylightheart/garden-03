@@ -107,6 +107,7 @@ canvas {
     margin: 10px 0;
 }
 
+.noise-bar {
     background: #ff4444;
     transition: width 0.1s;
     box-shadow: 0 0 10px #ff4444;
@@ -128,4 +129,56 @@ canvas {
 
 @keyframes blink {
     50% { opacity: 0.5; }
+}
+
+#game-container {
+    position: relative;
+    border: 2px solid #444;
+    padding: 20px;
+    background: #111;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    border-radius: 8px;
+}
+
+.controls {
+    font-size: 0.9rem;
+    color: #888;
+    margin-top: 10px;
+}
+
+.fold-anim {
+    animation: fold-effect 0.5s ease-in-out;
+}
+
+@keyframes fold-effect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05) rotate(2deg); }
+    100% { transform: scale(1); }
+}
+
+.stats-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.stats-item {
+    font-weight: bold;
+}
+
+.ui-header {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #fff;
+}
+
+.key {
+    color: #00ffcc;
+    border: 1px solid #00ffcc;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-weight: bold;
 }
