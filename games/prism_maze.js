@@ -1,6 +1,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const statusEl = document.getElementById('status');
+const timerEl = document.getElementById('timer');
+const bestScoreEl = document.getElementById('best-score');
 
 const GRID_SIZE = 40;
 const WIDTH = canvas.width;
@@ -14,25 +16,83 @@ let sanctum = { x: 400, y: 300, radius: 30 };
 let selectedMirror = null;
 let gameOver = false;
 
+// Audio setup
+let audioCtx = null;
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playPing() {
+    if (!audioCtx) initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+}
+
+function playWin() {
+    if (!audioCtx) initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.5);
+}
+
 // UI Elements
-const timerEl = document.getElementById('timer');
-const bestScoreEl = document.getElementById('best-score');
 let startTime = null;
-let timer = 0;
-let bestScore = localStorage.getItem('prism_maze_best') || '--';
-bestScoreEl.innerText = bestScore;
+let timeLeft = 60;
+let bestScore = localStorage.getItem('prism_maze_best');
+
+if (bestScore) {
+    bestScoreEl.innerText = bestScore;
+} else {
+    bestScoreEl.innerText = '--';
+}
 
 function updateTimer() {
     if (gameOver) return;
-    timer = Math.floor((Date.now() - startTime) / 1000);
-    timerEl.innerText = timer;
+    if (!startTime) startTime = Date.now();
+    
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    timeLeft = Math.max(0, 60 - elapsed);
+    
+    timerEl.innerText = timeLeft;
+    
+    if (timeLeft <= 10) {
+        timerEl.classList.add('critical-time');
+    } else {
+        timerEl.classList.remove('critical-time');
+    }
+
+    if (timeLeft <= 0) {
+        gameOver = true;
+        statusEl.innerText = "TIME EXPIRED!";
+        statusEl.style.color = "#ff4444";
+    }
+
     requestAnimationFrame(updateTimer);
 }
 
-function saveHighScore() {
-    if (timer > 0 && timer < bestScore && bestScore !== '--') {
-        localStorage.setItem('prism_maze_best', timer);
-        bestScoreEl.innerText = timer;
+function saveHighScore(finalTime) {
+    if (bestScore === null || bestScore === '--' || finalTime < parseInt(bestScore)) {
+        localStorage.setItem('prism_maze_best', finalTime);
+        bestScore = finalTime;
+        bestScoreEl.innerText = bestScore;
     }
 }
 
@@ -142,7 +202,8 @@ function castRay(x, y, angle, depth) {
             gameOver = true;
             statusEl.innerText = "SUCCESS! You reached the Sanctum.";
             statusEl.style.color = "#00ff00";
-            saveHighScore();
+            playWin();
+            saveHighScore(timeLeft);
         }
     }
 
@@ -174,7 +235,6 @@ function draw() {
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#ff00ff';
     
-    // Add pulse effect
     const pulse = Math.sin(Date.now() / 500) * 5;
     ctx.arc(sanctum.x, sanctum.y, sanctum.radius + pulse, 0, Math.PI * 2);
     ctx.fill();
@@ -285,8 +345,10 @@ window.addEventListener('keydown', (e) => {
     if (selectedMirror) {
         if (e.key === 'ArrowLeft') {
             selectedMirror.angle -= 0.1;
+            playPing();
         } else if (e.key === 'ArrowRight') {
             selectedMirror.angle += 0.1;
+            playPing();
         }
     }
 });

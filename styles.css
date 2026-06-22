@@ -27,6 +27,7 @@ h1 {
     border: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     box-sizing: border-box;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
 }
 
 .maze-grid {
@@ -161,7 +162,6 @@ canvas {
     gap: 15px;
     margin-bottom: 10px;
     font-size: 0.9rem;
-    color: #888;
 }
 
 .stats-item {
