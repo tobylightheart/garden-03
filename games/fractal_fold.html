@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Fractal Fold</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            border: 2px solid #444;
+            padding: 20px;
+            background: #111;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+        canvas {
+            background-color: #000;
+            display: block;
+            border-radius: 4px;
+        }
+        #ui {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .controls {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+        .instructions {
+            max-width: 400px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .fold-anim {
+            animation: fold-effect 0.5s ease-in-out;
+        }
+        @keyframes fold-effect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05) rotate(2deg); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h1>The Fractal Fold</h1>
+        <p>Navigate the non-Euclidean labyrinth. <br>Use <b>WASD</b> to move. <br>Press <b style="color: #00ffcc;">'F'</b> to <b>Fold</b> the current room's connections.</p>
+    </div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+    <div id="ui">
+        <div id="status">Find the exit.</div>
+        <div class="controls">WASD: Move | F: Fold | R: Reset</div>
+    </div>
+    <script src="fractal_fold.js"></script>
+</body>
+</html>

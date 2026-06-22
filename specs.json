@@ -28,7 +28,7 @@
     {
       "id": "spec-005",
       "description": "The Fractal Fold: A maze where the player can 'fold' rooms, rotating the connectivity of passages to find a path through non-Euclidean space.",
-      "status": "pending",
+      "status": "complete",
       "game_path": "games/fractal_fold.html",
       "spec_path": "specs/spec-005.md"
     },

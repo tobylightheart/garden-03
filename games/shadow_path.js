@@ -98,9 +98,8 @@ function update() {
     const goalCol = Math.floor(player.x / TILE_SIZE);
     const goalRow = Math.floor(player.y / TILE_SIZE);
     if (maze[goalRow][goalCol] === 2) {
-        alert("You reached the exit!");
-        player.x = 1 * TILE_SIZE;
-        player.y = 1 * TILE_SIZE;
+        alert("You reached the exit! A new fold awaits... \n\nClick OK to enter the Fractal Fold.");
+        window.location.href = "fractal_fold.html";
     }
 }
 
