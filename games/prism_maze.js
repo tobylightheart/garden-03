@@ -166,13 +166,17 @@ for (let y = 0; y < level.length; y++) {
     }
 }
 
-// Add some mirrors to make it a real puzzle
-for (let i = 0; i < 10; i++) {
+// Add a deterministic starter mirror directly in the beam's line so the
+// opening puzzle is immediately legible instead of depending on random layout.
+mirrors.push({ x: 240, y: beam.y, angle: Math.PI / 4, fixed: true });
+
+// Add some extra mirrors to make it a real puzzle.
+for (let i = 0; i < 9; i++) {
     let mx, my;
     do {
         mx = Math.floor(Math.random() * (level[0].length - 2)) + 1;
         my = Math.floor(Math.random() * (level.length - 2)) + 1;
-    } while (level[my][mx] !== 0);
+    } while (level[my][mx] !== 0 || Math.abs(mx * GRID_SIZE - beam.x) < 120);
     level[my][mx] = 2;
     mirrors.push({ x: mx * GRID_SIZE, y: my * GRID_SIZE, angle: Math.random() * Math.PI * 2 });
 }
@@ -207,19 +211,27 @@ function castRay(x, y, angle, depth, path = []) {
         }
     }
 
-    // Mirrors
+    // Mirrors: treat each mirror as a small segment and find the nearest point
+    // where the ray passes close enough to touch it. The old version only looked
+    // for mirrors within 20px of the ray origin, so mirrors visibly in the beam's
+    // path were ignored.
     for (const m of mirrors) {
-        const dist = Math.sqrt((m.x - x)**2 + (m.y - y)**2);
-        if (dist < 20 && dist > 0) {
+        const toMirrorX = m.x - x;
+        const toMirrorY = m.y - y;
+        const alongRay = toMirrorX * dx + toMirrorY * dy;
+        if (alongRay <= 1) continue;
+
+        const closestX = x + dx * alongRay;
+        const closestY = y + dy * alongRay;
+        const perpendicularDist = Math.hypot(m.x - closestX, m.y - closestY);
+
+        if (perpendicularDist < 18 && alongRay < closestDist) {
             const normalX = -Math.sin(m.angle);
             const normalY = Math.cos(m.angle);
             const dot = dx * normalX + dy * normalY;
-            
-            if (dot < 0) {
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    hitObj = { type: 'mirror', x: m.x, y: m.y, angle: m.angle };
-                }
+            if (Math.abs(dot) > 0.05) {
+                closestDist = alongRay;
+                hitObj = { type: 'mirror', x: m.x, y: m.y, angle: m.angle };
             }
         }
     }
@@ -378,6 +390,7 @@ updateTimer();
 
 // Re-calculate beam path every frame for dynamic lighting
 function animateBeam() {
+    beam.reflections = 0;
     currentBeamPath = castRay(beam.x, beam.y, beam.angle, 0);
     requestAnimationFrame(animateBeam);
 }
