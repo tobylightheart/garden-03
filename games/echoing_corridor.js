@@ -179,13 +179,19 @@ function update() {
         shakeIntensity = 10;
     }
 
+    // Slow Motion Effect
+    let slowFactor = 1.0;
+    if (shadowEntity.active && Math.hypot(player.x - shadowEntity.x, player.y - shadowEntity.y) < 150) {
+        slowFactor = 0.5;
+    }
+
     // Movement
     let dx = 0;
     let dy = 0;
-    if (keys['ArrowUp'] || keys['KeyW']) dy -= player.speed;
-    if (keys['ArrowDown'] || keys['KeyS']) dy += player.speed;
-    if (keys['ArrowLeft'] || keys['KeyA']) dx -= player.speed;
-    if (keys['ArrowRight'] || keys['KeyD']) dx += player.speed;
+    if (keys['ArrowUp'] || keys['KeyW']) dy -= player.speed * slowFactor;
+    if (keys['ArrowDown'] || keys['KeyS']) dy += player.speed * slowFactor;
+    if (keys['ArrowLeft'] || keys['KeyA']) dx -= player.speed * slowFactor;
+    if (keys['ArrowRight'] || keys['KeyD']) dx += player.speed * slowFactor;
 
     // Collision with walls
     let nextX = player.x + dx;
@@ -310,9 +316,25 @@ function draw() {
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     
     // Draw Walls
-    ctx.fillStyle = (Math.random() > 0.98) ? '#444' : '#333';
+    ctx.strokeStyle = '#fff';
     for (let wall of walls) {
+        let isRevealed = false;
+        for (let p of pings) {
+            let dist = Math.hypot(wall.x + wall.w / 2 - p.x, wall.y + wall.h / 2 - p.y);
+            if (dist < p.radius) {
+                isRevealed = true;
+                break;
+            }
+        }
+
+        ctx.fillStyle = (noiseLevel > 80 && Math.random() > 0.8) ? '#111' : (isRevealed ? '#fff' : (Math.random() > 0.98 ? '#444' : '#333'));
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+        if (isRevealed) {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#fff';
+            ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+            ctx.shadowBlur = 0;
+        }
     }
     
     // Draw Goal
@@ -373,6 +395,12 @@ function draw() {
     fogGradient.addColorStop(1, 'rgba(0,0,0,0.98)');
     ctx.fillStyle = fogGradient;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+    // Scanline Effect
+    ctx.fillStyle = 'rgba(18, 16, 16, 0.1)';
+    for (let i = 0; i < GAME_HEIGHT; i += 4) {
+        ctx.fillRect(0, i, GAME_WIDTH, 1);
+    }
     
     ctx.restore();
     
