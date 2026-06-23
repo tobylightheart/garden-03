@@ -11,8 +11,8 @@ const HEIGHT = canvas.height;
 // Game state
 let mirrors = [];
 let walls = [];
-let beam = { x: 0, y: 0, angle: 0, reflections: 0 };
-let sanctum = { x: 400, y: 300, radius: 30 };
+let beam = { x: 60, y: 60, angle: 0, reflections: 0 };
+let sanctum = { x: 740, y: 540, radius: 30 };
 let selectedMirror = null;
 let gameOver = false;
 
@@ -296,6 +296,12 @@ function draw() {
     ctx.arc(sanctum.x, sanctum.y, sanctum.radius + pulse, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+
+    // Draw Beam Source
+    ctx.beginPath();
+    ctx.arc(beam.x, beam.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#00d4ff';
+    ctx.fill();
 
     // Draw Mirrors
     mirrors.forEach(m => {

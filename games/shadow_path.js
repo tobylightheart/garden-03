@@ -1,5 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+let hasWon = false;
 
 const TILE_SIZE = 40;
 const COLS = canvas.width / TILE_SIZE;
@@ -41,11 +43,11 @@ let player = {
 const keys = {};
 
 window.addEventListener('keydown', e => {
-    keys[e.key] = true;
+    keys[e.key.toLowerCase()] = true;
 });
 
 window.addEventListener('keyup', e => {
-    keys[e.key] = false;
+    keys[e.key.toLowerCase()] = false;
 });
 
 function update() {
@@ -97,9 +99,13 @@ function update() {
     // Check goal
     const goalCol = Math.floor(player.x / TILE_SIZE);
     const goalRow = Math.floor(player.y / TILE_SIZE);
-    if (maze[goalRow][goalCol] === 2) {
-        alert("You reached the exit! A new fold awaits... \n\nClick OK to enter the Fractal Fold.");
-        window.location.href = "fractal_fold.html";
+    if (!hasWon && maze[goalRow][goalCol] === 2) {
+        hasWon = true;
+        statusEl.innerText = 'Exit found. The next chamber opens...';
+        statusEl.style.color = '#44ff44';
+        setTimeout(() => { window.location.href = 'fractal_fold.html'; }, 900);
+    } else if (!hasWon) {
+        statusEl.innerText = player.isMoving ? 'Moving blind — remember the corridor.' : 'Stillness reveals the path.';
     }
 }
 

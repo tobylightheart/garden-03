@@ -7,17 +7,14 @@
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-    <div class="ui-container">
+    <main class="ui-container">
         <h1 class="ui-header">The Fractal Fold</h1>
-        <div class="instructions">
-            <p>Navigate the non-Euclidean labyrinth. <br>Use <b class="key">WASD</b> to move. <br>Press <b class="key">'F'</b> to <b class="key">Fold</b> the current room's connections.</p>
-        </div>
-        <div id="game-container">
-            <canvas id="gameCanvas" width="600" height="600"></canvas>
-        </div>
+        <div class="instructions"><p>Navigate the non-Euclidean labyrinth. Use <b class="key">WASD</b> to move. Press <b class="key">F</b> to fold the current room's connections.</p></div>
+        <div id="game-container"><canvas id="gameCanvas" width="600" height="600"></canvas></div>
         <div id="status">Find the exit.</div>
         <div class="controls">WASD: Move | F: Fold | R: Reset</div>
-    </div>
+        <nav class="game-nav"><a href="../index.html" class="btn-link">Back to Maze</a><a href="weight_of_shadow.html" class="btn-link">Next Chamber</a></nav>
+    </main>
     <script src="fractal_fold.js"></script>
 </body>
 </html>

@@ -263,7 +263,7 @@ function update() {
     // Noise Decay
     noiseLevel -= 0.5;
     if (noiseLevel < 0) noiseLevel = 0;
-    noiseBar.style.width = `${noiseLevel}%`;
+    noiseBar.style.width = `${Math.min(100, noiseLevel)}%`;
     if (noiseLevel > 70) {
         noiseBar.classList.add('noise-bar-high');
     } else {

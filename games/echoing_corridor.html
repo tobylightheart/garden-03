@@ -7,24 +7,20 @@
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-    <div class="ui-container">
+    <main class="ui-container">
         <h1 class="ui-header">The Echoing Corridor</h1>
-        <div class="instructions">
-            Use WASD/Arrows to move. Click to send a SONAR PING.<br>
-            High noise levels attract the Shadowy Entity. Reach the white goal.
-        </div>
+        <div class="instructions">Use <b class="key">WASD</b>/<b class="key">Arrows</b> to move. Click the canvas to send a sonar ping.<br>High noise attracts the Shadow. Reach the white goal.</div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div class="stats-container">
             <div class="stats-item">NOISE LEVEL</div>
             <div id="score" class="stats-item">SCORE: 0</div>
             <div id="high-score" class="stats-item">BEST: 0</div>
-            <div id="timer" class="stats-item">TIME: 00:00</div>
+            <div id="timer" class="stats-item">TIME: 02:00</div>
         </div>
-        <div class="noise-bar-container">
-            <div id="noise-bar"></div>
-        </div>
+        <div class="noise-bar-container"><div id="noise-bar"></div></div>
         <div id="status">STATUS: EXPLORING</div>
-    </div>
-
+        <nav class="game-nav"><a href="../index.html" class="btn-link">Back to Maze</a><a href="shadow_path.html" class="btn-link">Next Chamber</a></nav>
+    </main>
+    <script src="echoing_corridor.js"></script>
 </body>
 </html>

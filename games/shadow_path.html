@@ -7,17 +7,13 @@
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-    <div class="ui-container">
+    <main class="ui-container">
         <h1 class="ui-header">The Shadow Path</h1>
-        <p>Find the exit. The path only reveals itself when you stop.</p>
-    </div>
-    <div id="game-container">
+        <div id="status">Find the exit. The path only reveals itself when you stop.</div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-    </div>
-    <div class="instructions">
-        Use WASD or Arrow Keys to move. Stay still to see the way. 
-        <br><br>
-        <a href="weight_of_shadow.html" class="btn-link">Next: The Weight of Shadow</a>
-    </div>
+        <div class="instructions">Use <b class="key">WASD</b> or <b class="key">Arrow Keys</b> to move. Stop to see the way.</div>
+        <nav class="game-nav"><a href="../index.html" class="btn-link">Back to Maze</a><a href="fractal_fold.html" class="btn-link">Next Chamber</a></nav>
+    </main>
+    <script src="shadow_path.js"></script>
 </body>
 </html>

@@ -68,16 +68,30 @@ rooms.forEach(r => {
     }
 });
 
-// Fix start/exit
+// Fix start/exit and guarantee at least one fair route.
 const startRoom = rooms.find(r => r.x === 0 && r.y === 0);
 const exitRoom = rooms.find(r => r.x === 2 && r.y === 2);
 
-// Ensure start room can go somewhere
-if (startRoom.connections.every(c => !c)) startRoom.connections[1] = true;
-// Ensure exit room has some connection
-if (exitRoom.connections.every(c => !c)) exitRoom.connections[2] = true;
+function roomAt(x, y) {
+    return rooms.find(room => room.x === x && room.y === y);
+}
+
+function connectRooms(a, dir) {
+    const b = roomAt(a.x + DIRS[dir].x, a.y + DIRS[dir].y);
+    if (!b) return;
+    a.connections[dir] = true;
+    b.connections[(dir + 2) % 4] = true;
+}
+
+connectRooms(startRoom, 1);      // (0,0) -> (1,0)
+connectRooms(roomAt(1, 0), 1);   // (1,0) -> (2,0)
+connectRooms(roomAt(2, 0), 2);   // (2,0) -> (2,1)
+connectRooms(roomAt(2, 1), 2);   // (2,1) -> exit
+exitRoom.isExit = true;
+exitRoom.isStable = true;
 
 let currentRoom = startRoom;
+let won = false;
 let player = { x: 0, y: 0 };
 
 function draw() {
@@ -130,14 +144,15 @@ function draw() {
     ctx.shadowBlur = 0;
 
     // UI Update
-    const foldable = r.isFoldable ? "Yes" : "No";
-    const stable = r.isStable ? "Yes" : "No";
-    statusEl.innerText = `Room: ${currentRoom.x}, ${currentRoom.y} | Foldable: ${foldable} | Stable: ${stable}`;
+    const foldable = currentRoom.isFoldable ? "Yes" : "No";
+    const stable = currentRoom.isStable ? "Yes" : "No";
+    statusEl.innerText = won ? 'Fold complete. The exit holds steady.' : `Room: ${currentRoom.x}, ${currentRoom.y} | Foldable: ${foldable} | Stable: ${stable}`;
 }
 
 window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
     
+    if (won) return;
     if (key === 'f') {
         currentRoom.fold();
         container.classList.remove('fold-anim');
@@ -162,6 +177,10 @@ window.addEventListener('keydown', (e) => {
                 const nextRoom = rooms.find(r => r.x === nx && r.y === ny);
                 if (nextRoom) {
                     currentRoom = nextRoom;
+                    if (currentRoom.isExit) {
+                        won = true;
+                        statusEl.style.color = '#44ff44';
+                    }
                     draw();
                 }
             }

@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const statusOverlay = document.getElementById('status-overlay');
+const statusEl = document.getElementById('status');
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
@@ -47,12 +48,19 @@ const map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
+// Hand-place hazards/objectives on reachable path cells.
+map[5][5] = 2;   // stasis gate
+map[9][12] = 2;  // stasis gate
+map[7][10] = 3;  // pit
+map[15][13] = 3; // pit
+map[19][18] = 4; // exit
+
 const keys = {};
 window.addEventListener('keydown', e => keys[e.code] = true);
 window.addEventListener('keyup', e => keys[e.code] = false);
 
 function update() {
-    if (gameState !== 'playing') return;
+    if (gameState === 'gameover' || gameState === 'win') return;
 
     let moveX = 0;
     let moveY = 0;
@@ -71,6 +79,7 @@ function update() {
 
     // Tilt calculation
     const speed = Math.sqrt(player.vx**2 + player.vy**2);
+    statusEl.innerText = speed < 0.5 ? 'The floor is starting to tilt...' : 'Momentum lightens the shadow.';
     if (speed < 0.5) {
         tilt += 0.005;
         if (tilt > 1) tilt = 1;
@@ -107,6 +116,7 @@ function update() {
     // Pit detection
     if (map[mapY] && map[mapY][mapX] === 3) {
         gameState = 'gameover';
+        statusEl.innerText = 'You fell into the void. Resetting...';
         setTimeout(() => {
             player.x = 100;
             player.y = 100;
@@ -114,6 +124,7 @@ function update() {
             player.vy = 0;
             tilt = 0;
             gameState = 'playing';
+            statusEl.innerText = 'Keep moving. Stasis is a heavy burden.';
         }, 1000);
     }
 
@@ -127,9 +138,10 @@ function update() {
             
             if (stasisProgress >= 1) {
                 gameState = 'playing';
+                map[mapY][mapX] = 0;
                 stasisProgress = 0;
                 statusOverlay.style.display = 'none';
-                // Teleport or move forward? For now, just let them move out
+                statusEl.innerText = 'Gate released. Move before the floor remembers your weight.';
             }
         } else {
             gameState = 'playing';
@@ -141,9 +153,9 @@ function update() {
     // Exit detection
     if (map[mapY] && map[mapY][mapX] === 4) {
         gameState = 'win';
-        setTimeout(() => {
-            window.location.href = 'entry.html';
-        }, 1000);
+        statusEl.innerText = 'You balanced the shadow. Returning to the Maze...';
+        statusEl.style.color = '#44ff44';
+        setTimeout(() => { window.location.href = '../index.html'; }, 1000);
     }
 
     // Bounds check
@@ -217,11 +229,11 @@ function draw() {
 
     // HUD
     ctx.fillStyle = 'white';
-    ctx.font = '16px Arial';
+    ctx.font = '16px Courier New';
     ctx.fillText(`Tilt: ${tilt.toFixed(2)}`, 20, 30);
     if (gameState === 'gameover') {
         ctx.fillStyle = 'red';
-        ctx.font = '40px Arial';
+        ctx.font = '40px Courier New';
         ctx.fillText('FELL INTO THE VOID', WIDTH / 2 - 150, HEIGHT / 2);
     }
 

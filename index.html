@@ -6,27 +6,39 @@
     <title>The Maze of Games</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body
-    <div class="ui-container">
+<body>
+    <main class="ui-container maze-entry">
+        <p class="eyebrow">A small arcade of strange spatial puzzles</p>
         <h1 class="ui-header">THE MAZE</h1>
-        <div class="maze-grid">
-            <!-- Game entries -->
+        <p class="intro">Choose a chamber. Each one bends a different sense: light, sound, memory, geometry, or momentum.</p>
+        <nav class="maze-grid" aria-label="Game list">
             <a href="games/prism_maze.html" class="game-card">
+                <span class="card-index">01</span>
                 <h3>The Prism Maze</h3>
-                <p>Rotate the mirrors to guide the beam through reflections to the sanctum.</p>
+                <p>Rotate mirrors to guide a beam through reflections to the sanctum.</p>
             </a>
             <a href="games/echoing_corridor.html" class="game-card">
+                <span class="card-index">02</span>
                 <h3>The Echoing Corridor</h3>
-                <p>Use sonar to navigate the void. Beware the shadows.</p>
+                <p>Use sonar to reveal the void, but keep your noise below the shadow's hunger.</p>
+            </a>
+            <a href="games/shadow_path.html" class="game-card">
+                <span class="card-index">03</span>
+                <h3>The Shadow Path</h3>
+                <p>Move by memory: the walls become clear only when you stand still.</p>
             </a>
             <a href="games/fractal_fold.html" class="game-card">
+                <span class="card-index">04</span>
                 <h3>The Fractal Fold</h3>
-                <p>Navigate a maze where you can fold the geometry of the space itself.</p>
+                <p>Fold room connections to cross a non-Euclidean maze.</p>
             </a>
-        </div>
-    </div>
-    <footer
-        &copy; 2026 The Maze of Games
-    </footer>
+            <a href="games/weight_of_shadow.html" class="game-card">
+                <span class="card-index">05</span>
+                <h3>The Weight of Shadow</h3>
+                <p>Balance momentum, tilt, pits, and stasis gates.</p>
+            </a>
+        </nav>
+    </main>
+    <footer>&copy; 2026 The Maze of Games</footer>
 </body>
-
+</html>

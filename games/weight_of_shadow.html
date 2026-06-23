@@ -7,21 +7,14 @@
     <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-    <div class="ui-container">
-        <h1>The Weight of Shadow</h1>
-        <p>Keep moving. Stasis is a heavy burden.</p>
-    </div>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <main class="ui-container">
+        <h1 class="ui-header">The Weight of Shadow</h1>
+        <div id="status">Keep moving. Stasis is a heavy burden.</div>
+        <canvas id="gameCanvas" width="800" height="840"></canvas>
         <div id="status-overlay"></div>
-    </div>
-    <div class="instructions">
-        Use WASD or Arrow Keys to move. <br>
-        Avoid the pits. Stay still for 3 seconds at a Stasis Gate to progress.
-    </div>
-    <div style="margin-top: 20px;">
-        <a href="entry.html" class="btn-link">Return to Entry</a>
-    </div>
+        <div class="instructions">Use <b class="key">WASD</b> or <b class="key">Arrow Keys</b>. Avoid pits. Hold still on a Stasis Gate for 3 seconds to unlock it.</div>
+        <nav class="game-nav"><a href="../index.html" class="btn-link">Back to Maze</a></nav>
+    </main>
     <script src="weight_of_shadow.js"></script>
 </body>
 </html>

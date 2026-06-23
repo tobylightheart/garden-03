@@ -1,7 +1,7 @@
 body {
     background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
     color: #e0e0e0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -158,4 +158,121 @@ canvas {
     background: #ff4444;
     width: 0%;
     transition: width 0.3s ease;
+}
+
+
+.maze-entry {
+    text-align: center;
+}
+
+.eyebrow {
+    color: #00ffcc;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin: 0 0 0.75rem;
+}
+
+.intro {
+    color: #b8b8b8;
+    max-width: 680px;
+    margin: -1rem auto 2rem;
+    line-height: 1.6;
+}
+
+.maze-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    width: 100%;
+}
+
+.card-index {
+    display: inline-block;
+    color: #00ffcc;
+    opacity: 0.75;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.game-card h3 {
+    margin: 0 0 0.65rem;
+    color: #fff;
+}
+
+.game-card p {
+    margin: 0;
+    color: #aaa;
+    line-height: 1.45;
+}
+
+#status,
+.status {
+    font-weight: bold;
+    color: #00d4ff;
+    margin: 15px 0;
+    font-size: 1.1rem;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+#noise-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00ffcc, #ffd166, #ff4444);
+    transition: width 0.3s ease, filter 0.3s ease;
+}
+
+.noise-bar-high {
+    filter: drop-shadow(0 0 10px #ff4444);
+}
+
+.game-nav {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fold-anim {
+    animation: fold-warp 320ms ease-in-out;
+}
+
+@keyframes fold-warp {
+    0% { transform: perspective(800px) rotateY(0deg) scale(1); filter: hue-rotate(0deg); }
+    50% { transform: perspective(800px) rotateY(8deg) scale(0.98); filter: hue-rotate(70deg); }
+    100% { transform: perspective(800px) rotateY(0deg) scale(1); filter: hue-rotate(0deg); }
+}
+
+#status-overlay {
+    display: none;
+    margin-top: 10px;
+    color: #00ffcc;
+    font-weight: bold;
+}
+
+footer {
+    margin: 24px 0;
+    color: #777;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+    body {
+        justify-content: flex-start;
+        padding: 16px 0;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .ui-container {
+        padding: 18px;
+    }
+
+    .stats-container {
+        flex-direction: column;
+        gap: 6px;
+    }
 }
