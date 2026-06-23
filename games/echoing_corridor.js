@@ -50,6 +50,7 @@ let shadowEntity = {
 
 // Visual Polish
 let shakeIntensity = 0;
+let mistOffset = 0;
 
 // Audio System
 let audioCtx = null;
@@ -101,6 +102,22 @@ function playShadowHum() {
     osc.stop(audioCtx.currentTime + 0.1);
 }
 
+function playCollision() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
 function createParticles(x, y, color, count = 10) {
     for (let i = 0; i < count; i++) {
         particles.push({
@@ -119,10 +136,10 @@ function createParticles(x, y, color, count = 10) {
 function initMaze() {
     walls = [];
     // Outer boundaries
-    walls.push({x: 0, y: 0, w: 800, h: 10});
-    walls.push({x: 0, y: 590, w: 800, h: 10});
-    walls.push({x: 0, y: 0, w: 10, h: 600});
-    walls.push({x: 790, y: 0, w: 10, h: 600});
+    walls.push({x: 0, y: 0, w: 800, h: 10, highlight: 0});
+    walls.push({x: 0, y: 590, w: 800, h: 10, highlight: 0});
+    walls.push({x: 0, y: 0, w: 10, h: 600, highlight: 0});
+    walls.push({x: 790, y: 0, w: 10, h: 600, highlight: 0});
     
     // Random internal walls
     for (let i = 0; i < 15; i++) {
@@ -131,7 +148,7 @@ function initMaze() {
         let x = Math.random() * (GAME_WIDTH - w);
         let y = Math.random() * (GAME_HEIGHT - h);
         if (x < 150 || y < 150 || x > 600 || y > 400) {
-            walls.push({x, y, w, h});
+            walls.push({x, y, w, h, highlight: 0});
         }
     }
 }
@@ -157,6 +174,14 @@ canvas.addEventListener('mousedown', () => {
     });
     noiseLevel += 25;
     createParticles(player.x, player.y, '#fff', 15);
+
+    // Echo effect: highlight nearby walls
+    for (let wall of walls) {
+        let dist = Math.hypot(wall.x + wall.w / 2 - player.x, wall.y + wall.h / 2 - player.y);
+        if (dist < 300) {
+            wall.highlight = 1.0;
+        }
+    }
 });
 
 function update() {
@@ -209,6 +234,8 @@ function update() {
     if (!hit) {
         player.x = nextX;
         player.y = nextY;
+    } else {
+        playCollision();
     }
 
     // Pings
@@ -301,6 +328,13 @@ function update() {
             highScoreText.innerText = `BEST: ${highScore}`;
         }
     }
+
+    // Decay wall highlights
+    for (let wall of walls) {
+        wall.highlight *= 0.95;
+    }
+
+    mistOffset += 0.5;
 }
 
 function draw() {
@@ -327,10 +361,10 @@ function draw() {
             }
         }
 
-        ctx.fillStyle = (noiseLevel > 80 && Math.random() > 0.8) ? '#111' : (isRevealed ? '#fff' : (Math.random() > 0.98 ? '#444' : '#333'));
+        ctx.fillStyle = (noiseLevel > 80 && Math.random() > 0.8) ? '#111' : (isRevealed || wall.highlight > 0.1 ? '#fff' : (Math.random() > 0.98 ? '#444' : '#333'));
         ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-        if (isRevealed) {
-            ctx.shadowBlur = 10;
+        if (isRevealed || wall.highlight > 0.1) {
+            ctx.shadowBlur = 10 + (wall.highlight * 20);
             ctx.shadowColor = '#fff';
             ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
             ctx.shadowBlur = 0;
@@ -396,6 +430,16 @@ function draw() {
     ctx.fillStyle = fogGradient;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     
+    // Mist Effect
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+    for (let i = 0; i < 5; i++) {
+        let x = (Math.sin(mistOffset * 0.2 + i) * 100) + (GAME_WIDTH / 2);
+        let y = (Math.cos(mistOffset * 0.3 + i) * 50) + (GAME_HEIGHT / 2);
+        ctx.beginPath();
+        ctx.arc(x, y, 100 + i * 20, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
     // Scanline Effect
     ctx.fillStyle = 'rgba(18, 16, 16, 0.1)';
     for (let i = 0; i < GAME_HEIGHT; i += 4) {
