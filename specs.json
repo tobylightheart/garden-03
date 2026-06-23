@@ -52,6 +52,13 @@
       "status": "pending",
       "game_path": "games/synchronized_labyrinth.html",
       "spec_path": "specs/spec-008.md"
+    },
+    {
+      "id": "spec-009",
+      "description": "The Echo of Presence: A time-delayed puzzle maze where the player's previous movements are recorded as 'ghosts' that persist for a few seconds. Players must strategically 'record' actions (like standing on a pressure plate) to complete puzzles that require simultaneous inputs.",
+      "status": "pending",
+      "game_path": "games/echo_of_presence.html",
+      "spec_path": "specs/spec-009.md"
     }
   ]
 }
