@@ -35,7 +35,7 @@
     {
       "id": "spec-006",
       "description": "The Weight of Shadow: A balance-based maze where the floor tilts if the player remains stationary. Players must maintain momentum to avoid sliding into pits, but some 'Stasis Gates' require them to stand perfectly still for 3 seconds to unlock.",
-      "status": "pending",
+      "status": "complete",
       "game_path": "games/weight_of_shadow.html",
       "spec_path": "specs/spec-006.md"
     },

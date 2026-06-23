@@ -90,8 +90,72 @@ canvas {
     to { transform: scale(1.05); opacity: 0.8; }
 }
 
-/* Additional juice for UI elements */
 .ui-container:hover {
     border-color: rgba(0, 212, 255, 0.2);
     transition: border-color 0.5s ease;
+}
+
+.stats-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.stats-item {
+    color: #aaa;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.btn-link {
+    color: #00d4ff;
+    text-decoration: none;
+    border: 1px solid #00d4ff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.btn-link:hover {
+    background: rgba(0, 212, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.game-card {
+    display: block;
+    padding: 20px;
+    margin: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.game-card:hover {
+    border-color: rgba(0, 212, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.noise-bar-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.noise-bar {
+    height: 100%;
+    background: #ff4444;
+    width: 0%;
+    transition: width 0.3s ease;
 }
