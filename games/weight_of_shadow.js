@@ -7,21 +7,19 @@ const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const TILE_SIZE = 40;
 
-// Game state
-let player = {
-    x: 100,
-    y: 100,
+const player = {
+    x: 60,
+    y: 60,
     vx: 0,
     vy: 0,
     radius: 12,
     color: '#e94560'
 };
 
-let tilt = 0; // -1 to 1
-let gravityForce = { x: 0, y: 0 };
-let gameState = 'playing'; // 'playing', 'stasis', 'gameover', 'win'
+let tilt = { x: 0, y: 0 };
+let gameState = 'playing';
 let stasisProgress = 0;
-let currentStasisGate = null;
+let lastTime = performance.now();
 
 // Maze Map: 1 = wall, 0 = path, 2 = stasis gate, 3 = pit, 4 = exit
 const map = [
@@ -30,162 +28,156 @@ const map = [
     [1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
     [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
-    [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1],
+    [1,0,0,0,1,2,0,0,0,0,0,0,0,0,0,1,0,1,0,1],
     [1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1],
-    [1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,0,1],
+    [1,0,0,0,0,0,1,0,0,0,3,0,0,1,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1,0,0,1,2,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,1],
     [1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
     [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
-    [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1],
+    [1,0,0,0,1,0,0,0,0,0,0,0,0,3,0,1,0,1,0,1],
     [1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-// Hand-place hazards/objectives on reachable path cells.
-map[5][5] = 2;   // stasis gate
-map[9][12] = 2;  // stasis gate
-map[7][10] = 3;  // pit
-map[15][13] = 3; // pit
-map[19][18] = 4; // exit
-
 const keys = {};
-window.addEventListener('keydown', e => keys[e.code] = true);
-window.addEventListener('keyup', e => keys[e.code] = false);
+window.addEventListener('keydown', e => { keys[e.code] = true; });
+window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-function update() {
+function resetPlayer(message = 'Reset. Keep moving; the floor remembers stillness.') {
+    player.x = 60;
+    player.y = 60;
+    player.vx = 0;
+    player.vy = 0;
+    tilt.x = 0;
+    tilt.y = 0;
+    stasisProgress = 0;
+    statusOverlay.style.display = 'none';
+    gameState = 'playing';
+    statusEl.innerText = message;
+    statusEl.style.color = '';
+}
+
+function cellAt(x, y) {
+    const mapX = Math.floor(x / TILE_SIZE);
+    const mapY = Math.floor(y / TILE_SIZE);
+    if (!map[mapY] || map[mapY][mapX] === undefined) return 1;
+    return map[mapY][mapX];
+}
+
+function hitsWall(x, y) {
+    const r = player.radius;
+    return [
+        [x - r, y - r], [x + r, y - r], [x - r, y + r], [x + r, y + r]
+    ].some(([px, py]) => cellAt(px, py) === 1);
+}
+
+function update(now = performance.now()) {
+    const dt = Math.min(2, (now - lastTime) / 16.67);
+    lastTime = now;
     if (gameState === 'gameover' || gameState === 'win') return;
 
-    let moveX = 0;
-    let moveY = 0;
-    if (keys['ArrowUp'] || keys['KeyW']) moveY -= 1;
-    if (keys['ArrowDown'] || keys['KeyS']) moveY += 1;
-    if (keys['ArrowLeft'] || keys['KeyA']) moveX -= 1;
-    if (keys['ArrowRight'] || keys['KeyD']) moveX += 1;
+    const inputX = (keys['ArrowRight'] || keys['KeyD'] ? 1 : 0) - (keys['ArrowLeft'] || keys['KeyA'] ? 1 : 0);
+    const inputY = (keys['ArrowDown'] || keys['KeyS'] ? 1 : 0) - (keys['ArrowUp'] || keys['KeyW'] ? 1 : 0);
+    const hasInput = inputX !== 0 || inputY !== 0;
 
-    // Apply input to velocity
-    player.vx += moveX * 0.5;
-    player.vy += moveY * 0.5;
+    // Keys tilt the floor, not a one-frame impulse. Tilt persists and decays
+    // slowly, so every direction visibly changes motion.
+    tilt.x += inputX * 0.035 * dt;
+    tilt.y += inputY * 0.035 * dt;
+    tilt.x = Math.max(-1, Math.min(1, tilt.x));
+    tilt.y = Math.max(-1, Math.min(1, tilt.y));
 
-    // Friction
-    player.vx *= 0.9;
-    player.vy *= 0.9;
-
-    // Tilt calculation
-    const speed = Math.sqrt(player.vx**2 + player.vy**2);
-    statusEl.innerText = speed < 0.5 ? 'The floor is starting to tilt...' : 'Momentum lightens the shadow.';
-    if (speed < 0.5) {
-        tilt += 0.005;
-        if (tilt > 1) tilt = 1;
-        if (tilt < -1) tilt = -1;
-    } else {
-        tilt *= 0.95;
-        if (Math.abs(tilt) < 0.01) tilt = 0;
+    if (!hasInput) {
+        tilt.x *= 0.992;
+        tilt.y *= 0.992;
     }
 
-    // Gravity force from tilt
-    gravityForce.x = tilt * 0.2;
-    gravityForce.y = tilt * 0.2;
+    player.vx += tilt.x * 0.28 * dt;
+    player.vy += tilt.y * 0.28 * dt;
+    player.vx *= 0.985;
+    player.vy *= 0.985;
 
-    // Apply gravity and velocity
-    player.vx += gravityForce.x;
-    player.vy += gravityForce.y;
+    let nextX = player.x + player.vx * dt;
+    let nextY = player.y + player.vy * dt;
 
-    // Collision detection
-    let nextX = player.x + player.vx;
-    let nextY = player.y + player.vy;
-
-    const mapX = Math.floor(nextX / TILE_SIZE);
-    const mapY = Math.floor(nextY / TILE_SIZE);
-
-    // Simple wall collision
-    if (map[mapY] && map[mapY][mapX] === 1) {
-        player.vx *= -0.5;
-        player.vy *= -0.5;
-    } else {
+    if (!hitsWall(nextX, player.y)) {
         player.x = nextX;
-        player.y = nextY;
+    } else {
+        player.vx *= -0.35;
     }
 
-    // Pit detection
-    if (map[mapY] && map[mapY][mapX] === 3) {
+    if (!hitsWall(player.x, nextY)) {
+        player.y = nextY;
+    } else {
+        player.vy *= -0.35;
+    }
+
+    const cell = cellAt(player.x, player.y);
+    const speed = Math.hypot(player.vx, player.vy);
+
+    if (cell === 3) {
         gameState = 'gameover';
         statusEl.innerText = 'You fell into the void. Resetting...';
-        setTimeout(() => {
-            player.x = 100;
-            player.y = 100;
-            player.vx = 0;
-            player.vy = 0;
-            tilt = 0;
-            gameState = 'playing';
-            statusEl.innerText = 'Keep moving. Stasis is a heavy burden.';
-        }, 1000);
+        setTimeout(() => resetPlayer(), 900);
+        return;
     }
 
-    // Stasis Gate detection
-    if (map[mapY] && map[mapY][mapX] === 2) {
-        if (speed < 0.5) {
-            gameState = 'stasis';
-            stasisProgress += 0.02;
+    if (cell === 2) {
+        if (speed < 0.45) {
+            stasisProgress += 0.012 * dt;
             statusOverlay.style.display = 'block';
             statusOverlay.innerText = `STASIS: ${Math.min(100, Math.floor(stasisProgress * 100))}%`;
-            
+            statusEl.innerText = 'Hold still. The gate is learning your weight.';
             if (stasisProgress >= 1) {
-                gameState = 'playing';
+                const mapX = Math.floor(player.x / TILE_SIZE);
+                const mapY = Math.floor(player.y / TILE_SIZE);
                 map[mapY][mapX] = 0;
                 stasisProgress = 0;
                 statusOverlay.style.display = 'none';
-                statusEl.innerText = 'Gate released. Move before the floor remembers your weight.';
+                statusEl.innerText = 'Gate released. Tilt away before momentum returns.';
             }
         } else {
-            gameState = 'playing';
             stasisProgress = 0;
             statusOverlay.style.display = 'none';
+            statusEl.innerText = 'Slow down on the stasis gate to unlock it.';
         }
+    } else {
+        stasisProgress = 0;
+        statusOverlay.style.display = 'none';
+        statusEl.innerText = hasInput ? 'Tilt holds. Let momentum carry you.' : 'No input: tilt slowly settles.';
     }
 
-    // Exit detection
-    if (map[mapY] && map[mapY][mapX] === 4) {
+    if (cell === 4) {
         gameState = 'win';
         statusEl.innerText = 'You balanced the shadow. Returning to the Maze...';
         statusEl.style.color = '#44ff44';
         setTimeout(() => { window.location.href = '../index.html'; }, 1000);
     }
-
-    // Bounds check
-    if (player.x < 0 || player.x > WIDTH || player.y < 0 || player.y > HEIGHT) {
-        gameState = 'gameover';
-        setTimeout(() => {
-            player.x = 100;
-            player.y = 100;
-            player.vx = 0;
-            player.vy = 0;
-            tilt = 0;
-            gameState = 'playing';
-        }, 1000);
-    }
 }
 
 function draw() {
-    // Clear
-    ctx.fillStyle = '#0f3460';
+    ctx.fillStyle = '#07111f';
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    // Draw Map
+    ctx.save();
+    ctx.translate(WIDTH / 2, HEIGHT / 2);
+    ctx.rotate((tilt.x - tilt.y) * 0.02);
+    ctx.translate(-WIDTH / 2, -HEIGHT / 2);
+
     for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
             const cell = map[y][x];
             if (cell === 1) {
                 ctx.fillStyle = '#16213e';
                 ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                // Shimmer
-                ctx.strokeStyle = `rgba(233, 69, 96, ${0.1 + Math.sin(Date.now() / 500) * 0.05})`;
+                ctx.strokeStyle = `rgba(233, 69, 96, ${0.12 + Math.sin(Date.now() / 500) * 0.05})`;
                 ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             } else if (cell === 2) {
                 ctx.fillStyle = '#e94560';
@@ -195,52 +187,30 @@ function draw() {
                 ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             } else if (cell === 4) {
                 ctx.fillStyle = '#4ecc71';
-                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.fillRect(x * TILE_SIZE + 4, y * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8);
             }
         }
     }
 
-    // Draw Player
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
     ctx.fillStyle = player.color;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = player.color;
     ctx.fill();
-    ctx.closePath();
+    ctx.shadowBlur = 0;
 
-    // Tilt effect (camera shake/shift)
-    ctx.save();
-    ctx.translate(WIDTH / 2 - (tilt * 20), HEIGHT / 2 - (tilt * 20));
-    ctx.rotate(tilt * 0.05);
-    // redraw everything in a relative space or just apply a global transform
-    // For simplicity, let's just apply the tilt to the player's draw or a container.
-    // Actually, applying it to the canvas context is easier.
     ctx.restore();
 
-    // Re-draw player with tilt
-    ctx.save();
-    ctx.translate(player.x, player.y);
-    ctx.rotate(tilt * 0.2);
-    ctx.beginPath();
-    ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-    ctx.fillStyle = player.color;
-    ctx.fill();
-    ctx.closePath();
-    ctx.restore();
-
-    // HUD
     ctx.fillStyle = 'white';
     ctx.font = '16px Courier New';
-    ctx.fillText(`Tilt: ${tilt.toFixed(2)}`, 20, 30);
-    if (gameState === 'gameover') {
-        ctx.fillStyle = 'red';
-        ctx.font = '40px Courier New';
-        ctx.fillText('FELL INTO THE VOID', WIDTH / 2 - 150, HEIGHT / 2);
-    }
+    ctx.fillText(`Tilt X:${tilt.x.toFixed(2)} Y:${tilt.y.toFixed(2)}  Speed:${Math.hypot(player.vx, player.vy).toFixed(2)}`, 20, 30);
 
-    requestAnimationFrame(() => {
-        update();
+    requestAnimationFrame((now) => {
+        update(now);
         draw();
     });
 }
 
+resetPlayer('Use WASD/Arrows to tilt the floor. Tilt persists, so steer early.');
 draw();

@@ -123,66 +123,56 @@ function saveHighScore(finalTime) {
     }
 }
 
-// Level layout (0 = empty, 1 = wall, 2 = mirror, 3 = beam source, 4 = sanctum)
+// Level layout: keep the playfield open so the puzzle is about routing light,
+// not hoping random mirrors avoid invisible blocker geometry.
 const level = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
-    [1,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
-    [1,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-// Initialize entities
+// Initialize border walls.
 for (let y = 0; y < level.length; y++) {
     for (let x = 0; x < level[y].length; x++) {
-        const cell = level[y][x];
-        if (cell === 1) {
+        if (level[y][x] === 1) {
             walls.push({ x: x * GRID_SIZE, y: y * GRID_SIZE, w: GRID_SIZE, h: GRID_SIZE });
-        } else if (cell === 2) {
-            mirrors.push({ x: x * GRID_SIZE, y: y * GRID_SIZE, angle: Math.random() * Math.PI * 2 });
-        } else if (cell === 3) {
-            beam.x = x * GRID_SIZE;
-            beam.y = y * GRID_SIZE;
-            beam.angle = 0;
-        } else if (cell === 4) {
-            sanctum.x = x * GRID_SIZE;
-            sanctum.y = y * GRID_SIZE;
         }
     }
 }
 
-// Add a deterministic starter mirror directly in the beam's line so the
-// opening puzzle is immediately legible instead of depending on random layout.
-mirrors.push({ x: 240, y: beam.y, angle: Math.PI / 4, fixed: true });
+// A guaranteed five-bounce solution. Every mirror starts exactly on the current
+// beam segment; players can still rotate them to experiment, but a solvable
+// scaffold is always present.
+const solutionMirrors = [
+    { x: 240, y: 60, angle: Math.PI / 4 },
+    { x: 240, y: 220, angle: Math.PI / 4 },
+    { x: 600, y: 220, angle: Math.PI / 4 },
+    { x: 600, y: 420, angle: Math.PI / 4 },
+    { x: 740, y: 420, angle: Math.PI / 4 },
+];
+mirrors.push(...solutionMirrors.map(m => ({ ...m, solution: true })));
 
-// Add some extra mirrors to make it a real puzzle.
-for (let i = 0; i < 9; i++) {
-    let mx, my;
-    do {
-        mx = Math.floor(Math.random() * (level[0].length - 2)) + 1;
-        my = Math.floor(Math.random() * (level.length - 2)) + 1;
-    } while (level[my][mx] !== 0 || Math.abs(mx * GRID_SIZE - beam.x) < 120);
-    level[my][mx] = 2;
-    mirrors.push({ x: mx * GRID_SIZE, y: my * GRID_SIZE, angle: Math.random() * Math.PI * 2 });
-}
+// Optional decoys are deterministic and kept away from the solved route.
+mirrors.push(
+    { x: 160, y: 420, angle: Math.PI / 8, decoy: true },
+    { x: 420, y: 100, angle: -Math.PI / 6, decoy: true },
+    { x: 440, y: 500, angle: Math.PI / 3, decoy: true },
+);
 
 function castRay(x, y, angle, depth, path = []) {
-    if (depth > 15) return path;
+    if (depth > 15 || gameOver) return path;
     
     let dx = Math.cos(angle);
     let dy = Math.sin(angle);

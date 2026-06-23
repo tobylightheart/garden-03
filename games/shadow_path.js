@@ -34,7 +34,7 @@ let player = {
     y: 1 * TILE_SIZE,
     width: 30,
     height: 30,
-    speed: 4,
+    speed: 6,
     vx: 0,
     vy: 0,
     isMoving: false
@@ -55,19 +55,19 @@ function update() {
     player.vy = 0;
     player.isMoving = false;
 
-    if (keys['ArrowUp'] || keys['w']) {
+    if (keys['arrowup'] || keys['w']) {
         player.vy = -player.speed;
         player.isMoving = true;
     }
-    if (keys['ArrowDown'] || keys['s']) {
+    if (keys['arrowdown'] || keys['s']) {
         player.vy = player.speed;
         player.isMoving = true;
     }
-    if (keys['ArrowLeft'] || keys['a']) {
+    if (keys['arrowleft'] || keys['a']) {
         player.vx = -player.speed;
         player.isMoving = true;
     }
-    if (keys['ArrowRight'] || keys['d']) {
+    if (keys['arrowright'] || keys['d']) {
         player.vx = player.speed;
         player.isMoving = true;
     }
@@ -116,16 +116,12 @@ function draw() {
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
             if (maze[r][c] === 1) {
-                ctx.fillStyle = '#555';
-                if (player.isMoving) {
-                    ctx.globalAlpha = 0.2;
-                    ctx.filter = 'blur(4px)';
-                } else {
+                // While moving, the path vanishes completely; only memory remains.
+                if (!player.isMoving) {
+                    ctx.fillStyle = '#666';
                     ctx.globalAlpha = 1.0;
-                    ctx.filter = 'none';
+                    ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 }
-                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                ctx.filter = 'none';
                 ctx.globalAlpha = 1.0;
             } else if (maze[r][c] === 2) {
                 ctx.fillStyle = '#0f0';

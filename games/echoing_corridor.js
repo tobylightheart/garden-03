@@ -14,7 +14,7 @@ let player = {
     x: 50,
     y: 50,
     radius: 8,
-    speed: 2.5,
+    speed: 3.0,
     color: '#fff'
 };
 
@@ -132,25 +132,35 @@ function createParticles(x, y, color, count = 10) {
     }
 }
 
-// Generate Maze
+// Generate a deterministic, solvable corridor. Random rectangles could seal the
+// start or goal; these walls leave a guaranteed route around/through the maze.
 function initMaze() {
     walls = [];
+    const addWall = (x, y, w, h) => walls.push({x, y, w, h, highlight: 0});
+
     // Outer boundaries
-    walls.push({x: 0, y: 0, w: 800, h: 10, highlight: 0});
-    walls.push({x: 0, y: 590, w: 800, h: 10, highlight: 0});
-    walls.push({x: 0, y: 0, w: 10, h: 600, highlight: 0});
-    walls.push({x: 790, y: 0, w: 10, h: 600, highlight: 0});
-    
-    // Random internal walls
-    for (let i = 0; i < 15; i++) {
-        let w = Math.random() * 200 + 50;
-        let h = Math.random() * 200 + 50;
-        let x = Math.random() * (GAME_WIDTH - w);
-        let y = Math.random() * (GAME_HEIGHT - h);
-        if (x < 150 || y < 150 || x > 600 || y > 400) {
-            walls.push({x, y, w, h, highlight: 0});
-        }
-    }
+    addWall(0, 0, 800, 10);
+    addWall(0, 590, 800, 10);
+    addWall(0, 0, 10, 600);
+    addWall(790, 0, 10, 600);
+
+    // Interior baffles with clear gaps. The main route snakes through the gaps:
+    // start -> upper lane -> centre gap -> lower lane -> goal.
+    addWall(120, 80, 26, 330);
+    addWall(120, 480, 26, 70);
+    addWall(250, 10, 26, 210);
+    addWall(250, 300, 26, 290);
+    addWall(380, 80, 26, 330);
+    addWall(380, 480, 26, 70);
+    addWall(510, 10, 26, 230);
+    addWall(510, 320, 26, 270);
+    addWall(640, 80, 26, 330);
+    addWall(640, 480, 26, 70);
+
+    // Small islands for echo interest, deliberately not blocking the route.
+    addWall(185, 150, 40, 40);
+    addWall(315, 390, 40, 40);
+    addWall(575, 145, 40, 40);
 }
 
 initMaze();
